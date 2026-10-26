@@ -17,9 +17,9 @@ const initialDemo = (): ExecutionRun[] => Array.from({length:17}, (_,i) => ({
 const statusText: Record<string,string> = {connecting:'Conectando',connected:'Conectado',disconnected:'Desconectado',unconfigured:'Bridge não configurada',demo:'Demonstração',snapshot:'Snapshot de agentes'};
 
 export function OfficePage() {
-  const [source,setSource]=useState<'demo'|'native'|'friendly'>('demo');
+  const [source,setSource]=useState<'demo'|'native'|'friendly'>('friendly');
   const [demo,setDemo]=useState(initialDemo), [native,setNative]=useState<ExecutionRun[]>([]);
-  const [status,setStatus]=useState('demo'), [error,setError]=useState('');
+  const [status,setStatus]=useState('connecting'), [error,setError]=useState('');
   const [selected,setSelected]=useState<string|null>(null), [view,setView]=useState<'office'|'list'>('office');
   const [target,setTarget]=useState<ExecutionRun|null>(null), [retry,setRetry]=useState(0);
   const cancelDialog=useRef<HTMLDialogElement>(null);

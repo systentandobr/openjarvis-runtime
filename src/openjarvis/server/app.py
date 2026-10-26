@@ -195,9 +195,13 @@ def create_app(
         Optional event bus for telemetry.
     channel_bridge:
         Optional channel bridge for multi-platform messaging.
-    config:
-        Optional JarvisConfig for other settings.
     """
+    from openjarvis.server.freds_bridge import _load_dotenv
+
+    _load_dotenv()
+    if not api_key:
+        api_key = os.environ.get("OPENJARVIS_API_KEY", "")
+
     original_engine = engine
     security_enabled = config is not None and getattr(
         getattr(config, "security", None), "enabled", False
@@ -316,7 +320,7 @@ def create_app(
     app.state.session_start = time.time()
     # Exposed so WebSocket handlers can authenticate the handshake (the HTTP
     # AuthMiddleware never sees WS upgrade requests). Empty = auth disabled.
-    app.state.api_key = api_key
+    app.state.api_key = api_key or os.environ.get("OPENJARVIS_API_KEY", "")
 
     @app.on_event("shutdown")
     async def _shutdown_managed_runtime() -> None:

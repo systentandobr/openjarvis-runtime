@@ -688,7 +688,9 @@ def serve(
 
     # --- Channel Gateway: API key, sessions, ChannelBridge ---
     import os as _os
+    from openjarvis.server.freds_bridge import _load_dotenv
 
+    _load_dotenv()
     api_key = _os.environ.get("OPENJARVIS_API_KEY", "")
     if not api_key:
         try:

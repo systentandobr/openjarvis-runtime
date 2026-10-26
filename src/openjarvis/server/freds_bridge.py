@@ -3,18 +3,40 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
+from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from fastapi import APIRouter, WebSocket
 from openjarvis.server.auth_middleware import authenticate_websocket
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+def _load_dotenv() -> None:
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        return
+    for p in (Path(".env"), Path(__file__).resolve().parents[3] / ".env", Path(__file__).resolve().parents[4] / ".env"):
+        if p.is_file():
+            try:
+                for line in p.read_text(encoding="utf-8").splitlines():
+                    line = line.strip()
+                    if not line or line.startswith("#") or "=" not in line:
+                        continue
+                    k, _, v = line.partition("=")
+                    k, v = k.strip(), v.strip().strip("'\"")
+                    if k and k not in os.environ:
+                        os.environ[k] = v
+            except Exception:
+                pass
 
 
 def upstream_url() -> str | None:
     # Full WS route, e.g. wss://api.example/ws/<unit>?is_admin=true.
     # Never accept an upstream URL/token or unit override from the browser.
+    _load_dotenv()
     base = os.getenv("FREDS_SUPERVISION_WS_URL", "")
     token = os.getenv("FREDS_SUPERVISION_DEVICE_TOKEN", "")
     if not base or not token:
@@ -62,9 +84,10 @@ async def freds_events(websocket: WebSocket):
         await websocket.send_json({"type": "supervision:status", "status": "unconfigured"})
         await websocket.close(code=1000)
         return
+    await websocket.send_json({"type": "supervision:status", "status": "connecting"})
     try:
         from websockets.asyncio.client import connect
-        async with connect(url, max_size=1024 * 1024, open_timeout=10) as upstream:
+        async with connect(url, max_size=1024 * 1024, open_timeout=45) as upstream:
             await websocket.send_json({"type": "supervision:status", "status": "connected"})
             # Request initial active runs snapshot immediately upon connecting
             try:
@@ -78,7 +101,15 @@ async def freds_events(websocket: WebSocket):
                         frame = json.loads(text)
                     except (ValueError, TypeError):
                         continue
-                    if frame.get("type") in ("execution:event", "execution:cancel_result", "execution:snapshot"):
+                    ftype = frame.get("type")
+                    if ftype == "ping":
+                        try:
+                            await upstream.send(json.dumps({"type": "pong"}))
+                        except Exception:
+                            pass
+                        continue
+                    logger.info("Freds bridge received frame: type=%s", ftype)
+                    if ftype in ("execution:event", "execution:cancel_result", "execution:snapshot"):
                         await websocket.send_json(frame)
 
             async def control():
