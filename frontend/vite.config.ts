@@ -48,6 +48,7 @@ export default defineConfig({
     // Preserve the Vite 6 browser baseline for existing desktop webviews.
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     rolldownOptions: {
+      input: { main: path.resolve(__dirname, 'index.html'), officePreview: path.resolve(__dirname, 'office-preview.html') },
       output: {
         codeSplitting: {
           groups: [

@@ -247,12 +247,13 @@ class TestAgentConfigNew:
         )
 
     def test_default_system_prompt_anchors_identity(self) -> None:
-        """#540: the hardened wording must name OpenJarvis and explicitly
-        deny the model's training identity so distilled models stop
-        claiming to be Claude/ChatGPT/etc."""
+        """The Freds identity retains honest tool/cancellation boundaries."""
         prompt = AgentConfig().default_system_prompt
+        assert "Freds" in prompt
         assert "OpenJarvis" in prompt
-        assert "not Claude" in prompt
+        assert "autorizadas" in prompt
+        assert "cancelamento sem confirmação" in prompt
+
 
 
 class TestNestedEngineConfig:

@@ -1226,3 +1226,39 @@ export async function setInferenceSource(
 export const stageInferenceSource = (
   src: InferenceSource & { apiKey?: string },
 ): Promise<void> => setInferenceSource(src, { pending: true });
+
+/** Server-owned Freds bridge; upstream credentials never enter the browser. */
+export function openFredsSupervision(onFrame: (frame: Record<string, any>) => void, onStatus: (status: string) => void) {
+  const url = new URL('/v1/systentando/events', getBase() || window.location.origin);
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+  const key = getApiKey();
+  let protocols: string[] | undefined;
+  if (key) {
+    let binary = ''; new TextEncoder().encode(key).forEach(byte => binary += String.fromCharCode(byte));
+    protocols = ['openjarvis.auth.v1', 'openjarvis.key.b64url.' + btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')];
+  }
+  const socket = new WebSocket(url, protocols);
+  let stopped = false;
+  let lastStatus = 'connecting';
+  onStatus('connecting');
+  socket.onmessage = message => {
+    try {
+      const frame = JSON.parse(message.data);
+      if (frame.type === 'supervision:status') {lastStatus=frame.status;onStatus(frame.status);}
+      else if (frame.type === 'execution:event' || frame.type === 'execution:cancel_result' || frame.type === 'execution:snapshot') onFrame(frame);
+    } catch { /* malformed messages are not telemetry */ }
+  };
+  socket.onclose = () => { if (!stopped && lastStatus !== 'unconfigured') onStatus('disconnected'); };
+  socket.onerror = () => onStatus('disconnected');
+  return {
+    cancel: (frame: { execution_id: string; agent_id: string; session_id: string; request_id: string }) => {
+      if (socket.readyState !== WebSocket.OPEN) return false;
+      socket.send(JSON.stringify({ type:'execution:cancel', ...frame })); return true;
+    },
+    requestSnapshot: () => {
+      if (socket.readyState !== WebSocket.OPEN) return false;
+      socket.send(JSON.stringify({ type: 'execution:snapshot_request' })); return true;
+    },
+    close: () => { stopped = true; socket.close(); },
+  };
+}

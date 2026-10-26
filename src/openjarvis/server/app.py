@@ -474,6 +474,8 @@ def create_app(
                 except Exception:
                     pass
 
+    from openjarvis.server.freds_bridge import router as freds_supervision_router
+    app.include_router(freds_supervision_router)
     app.include_router(router)
     app.include_router(dashboard_router)
     app.include_router(comparison_router)
