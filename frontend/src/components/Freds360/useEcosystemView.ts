@@ -5,22 +5,29 @@ import { useExecutionRuns } from '../../lib/execution-runs.store';
 
 /** Coordena lifetime, cleanup e assinaturas do ecossistema 360°.
  *  Carrega snapshot na montagem; reage a visibilidade de aba.
- *  Integra execution-runs.store.ts como fonte de atividade. */
+ *  Integra execution-runs.store.ts como fonte de atividade.
+ *  IMPORTANTE: seletores de actions (referências estáveis) — nunca
+ *  assinar o estado inteiro como dep de effect que chama set()
+ *  (objeto novo a cada update → loop de update depth). */
 export function useEcosystemView() {
-  const store = useEcosystemStore();
+  const setLoading = useEcosystemStore((s) => s.setLoading);
+  const applyView = useEcosystemStore((s) => s.applyView);
+  const setSourceStatus = useEcosystemStore((s) => s.setSourceStatus);
+  const setReducedMotion = useEcosystemStore((s) => s.setReducedMotion);
+  const setHiddenTab = useEcosystemStore((s) => s.setHiddenTab);
   const runs = useExecutionRuns((s) => s.runs);
   const abortRef = useRef<AbortController | null>(null);
 
   async function refresh() {
-    store.setLoading(true);
+    setLoading(true);
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
       const view = await loadEcosystemView(ctrl.signal);
-      store.applyView(view);
+      applyView(view);
     } finally {
-      store.setLoading(false);
+      setLoading(false);
     }
   }
 
@@ -36,15 +43,15 @@ export function useEcosystemView() {
   const runCount = Object.keys(runs).length;
   useEffect(() => {
     if (runCount > 0) {
-      store.setSourceStatus('activity', 'ready');
+      setSourceStatus('activity', 'ready');
     }
-  }, [runCount, store]);
+  }, [runCount, setSourceStatus]);
 
   // Pausa/reduced-motion via eventos do browser
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => store.setReducedMotion(query.matches);
-    const visibility = () => store.setHiddenTab(document.hidden);
+    const sync = () => setReducedMotion(query.matches);
+    const visibility = () => setHiddenTab(document.hidden);
     sync();
     visibility();
     query.addEventListener('change', sync);
@@ -53,7 +60,7 @@ export function useEcosystemView() {
       query.removeEventListener('change', sync);
       document.removeEventListener('visibilitychange', visibility);
     };
-  }, [store]);
+  }, [setReducedMotion, setHiddenTab]);
 
   return { refresh, runCount };
 }
