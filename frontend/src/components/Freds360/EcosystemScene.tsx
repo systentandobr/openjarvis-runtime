@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { AudioLines, Bot, Focus, GitBranch } from 'lucide-react';
 import type { DemoEvent, DemoService } from './fixtures';
 import { demoStars } from './fixtures';
@@ -9,30 +9,43 @@ import { NowFeed } from './NowFeed';
 import { SentinelSummary } from './SentinelSummary';
 import { ProvenanceLegend } from './ProvenanceLegend';
 import { AccessibleServiceList } from './AccessibleServiceList';
+import type { IntegrityFinding } from '../../types/ecosystem';
 
 interface Props {
   services: DemoService[];
   events: DemoEvent[];
+  findings: IntegrityFinding[];
   animate: boolean;
+  isDemo: boolean;
   onInspect: (id: string) => void;
   onIntegrity: (id: string) => void;
   sceneRef: React.RefObject<HTMLDivElement | null>;
   onReset: () => void;
 }
 
-/** Renderer da cena — SVG com coordenadas determinísticas + overlays DOM acessíveis. */
-export function EcosystemScene({ services, events, animate, onInspect, onIntegrity, sceneRef, onReset }: Props) {
+/** Renderer da cena — SVG com coordenadas determinísticas + overlays DOM acessíveis.
+ *  Suporta dados reais (F360-05/06/07) e fixtures explícitas (F360-03/04). */
+export function EcosystemScene({ services, events, findings, animate, isDemo, onInspect, onIntegrity, sceneRef, onReset }: Props) {
   const frame = useRef<number | null>(null);
+  const lastDelta = useRef<[number, number]>([0, 0]);
+
+  useEffect(() => () => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+  }, []);
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!animate || e.pointerType === 'touch') return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
+    const dx = parallaxDelta(x);
+    const dy = parallaxDelta(y);
+    if (dx === lastDelta.current[0] && dy === lastDelta.current[1]) return;
+    lastDelta.current = [dx, dy];
     if (frame.current !== null) cancelAnimationFrame(frame.current);
     frame.current = requestAnimationFrame(() => {
-      sceneRef.current?.style.setProperty('--pan-x', `${parallaxDelta(x)}px`);
-      sceneRef.current?.style.setProperty('--pan-y', `${parallaxDelta(y)}px`);
+      sceneRef.current?.style.setProperty('--pan-x', `${dx}px`);
+      sceneRef.current?.style.setProperty('--pan-y', `${dy}px`);
     });
   }
 
@@ -72,21 +85,33 @@ export function EcosystemScene({ services, events, animate, onInspect, onIntegri
           <ellipse cx="500" cy="335" rx="300" ry="220" className="f360-orbit" />
           <ellipse cx="500" cy="335" rx="210" ry="180" className="f360-orbit" />
         </svg>
-        <FredsCore />
-        {services.map(s => <ServiceNode key={s.id} service={s} onInspect={onInspect} />)}
+        <FredsCore isDemo={isDemo} />
+        {services.map((s) => (
+          <ServiceNode key={s.id} service={s} onInspect={onInspect} />
+        ))}
         <button className="f360-agent f360-agent-dev" onClick={() => onInspect('core')}>
-          <span><GitBranch size={16} /></span><AudioLines size={20} /><small>Developer</small>
+          <span>
+            <GitBranch size={16} />
+          </span>
+          <AudioLines size={20} />
+          <small>Developer</small>
         </button>
         <button className="f360-agent f360-agent-qa" onClick={() => onInspect('core')}>
-          <span><Focus size={16} /></span><small>QA</small>
+          <span>
+            <Focus size={16} />
+          </span>
+          <small>QA</small>
         </button>
         <button className="f360-agent f360-agent-arch" onClick={() => onInspect('core')}>
-          <span><Bot size={16} /></span><small>Architect</small>
+          <span>
+            <Bot size={16} />
+          </span>
+          <small>Architect</small>
         </button>
       </div>
-      <NowFeed events={events} onInspect={onInspect} />
-      <SentinelSummary onInspect={onInspect} onIntegrity={onIntegrity} />
-      <ProvenanceLegend />
+      <NowFeed events={events} onInspect={onInspect} isDemo={isDemo} />
+      <SentinelSummary onInspect={onInspect} onIntegrity={onIntegrity} findings={findings} isDemo={isDemo} />
+      <ProvenanceLegend isDemo={isDemo} />
       <AccessibleServiceList services={services} onInspect={onInspect} />
     </div>
   );
