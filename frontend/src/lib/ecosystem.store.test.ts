@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { useEcosystemStore, useEcosystemNodes, useEcosystemExecutions, useEcosystemFindings } from './ecosystem.store';
 
 describe('ecosystem.store', () => {
-  it('estado inicial: demo, sem snapshot, fontes unavailable', () => {
+  it('estado inicial: real (demo é opt-in), sem snapshot, fontes unavailable', () => {
     const state = useEcosystemStore.getState();
-    expect(state.viewMode).toBe('demo');
+    expect(state.viewMode).toBe('real');
+    expect(state.demoExplicit).toBe(false);
     expect(state.snapshot).toBeNull();
     expect(state.sourceStatus.graph).toBe('unavailable');
     expect(state.selectedNodeId).toBeNull();
@@ -33,6 +34,7 @@ describe('ecosystem.store', () => {
         graph: { status: 'ready', observedAt: null, generatedAt: null, version: '1', coverage: [] },
         activity: { status: 'ready', observedAt: null, generatedAt: null, version: '1', coverage: [] },
         integrity: { status: 'stale', observedAt: null, generatedAt: null, version: '1', coverage: [] },
+        sessions: { status: 'unavailable', observedAt: null, generatedAt: null, version: null, coverage: [] },
       },
       demo: false,
       error: null,

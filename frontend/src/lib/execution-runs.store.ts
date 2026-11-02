@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type RunStage = 'executing' | 'cancel_requested' | 'cancel_unconfirmed' | 'cancelled' | 'complete' | 'error' | 'waiting_approval' | 'idle' | 'attention' | 'paused';
+export type RunStage = 'executing' | 'cancel_requested' | 'cancel_unconfirmed' | 'cancelled' | 'complete' | 'error' | 'waiting_approval' | 'idle' | 'attention' | 'paused' | 'unknown';
 export interface ExecutionRun {
     observationKind?: 'run' | 'agent_snapshot'; totalTokens?: number;
     id: string; agentId: string; sessionId: string; executorUnitId?: string; deviceId?: string;
@@ -8,6 +8,7 @@ export interface ExecutionRun {
     message?: string; skills?: string[]; hooks?: string[]; tokensUsed?: number; tokenLimit?: number;
     accountAlias?: string; quota5h?: number; quotaWeek?: number; routingReason?: string;
     parentId?: string; cancellationScope?: string; requestId?: string;
+    operationId?: string; accountRef?: string;
 }
 const terminal = (stage: string) => ['complete', 'error', 'cancelled'].includes(stage);
 interface RunState {
@@ -16,16 +17,22 @@ interface RunState {
     requestCancel: (id: string, requestId: string) => void;
     unconfirmed: (id: string, requestId: string) => void;
     reset: () => void;
+    disconnected: () => void;
 }
 export const useExecutionRuns = create<RunState>((set) => ({
     runs: {}, reset: () => set({ runs: {} }),
+    disconnected: () => set(({ runs }) => ({ runs: Object.fromEntries(Object.entries(runs).map(([id, run]) => [id, terminal(run.stage) ? run : { ...run, stage: 'unknown' as const, message: 'Conexão interrompida; estado da execução não confirmado.' }])) })),
     ingest: (frame) => set(({ runs }) => {
         if (frame.type === 'execution:snapshot' && Array.isArray(frame.runs)) {
             const next = { ...runs };
+            const seen = new Set<string>();
             for (const item of frame.runs) {
                 if (!item.execution_id || !item.agent_id || !item.session_id) continue;
+                if (!Number.isSafeInteger(item.sequence) || item.sequence < 1 || !['executing', 'waiting_approval', 'paused', 'attention', 'idle', 'unknown', 'cancel_requested', 'cancel_unconfirmed', 'cancelled', 'complete', 'error'].includes(item.stage)) continue;
+                seen.add(item.execution_id);
                 const existing = next[item.execution_id];
                 if (existing && terminal(existing.stage)) continue;
+                if (existing && (existing.agentId !== item.agent_id || existing.sessionId !== item.session_id || existing.sequence > item.sequence)) continue;
                 next[item.execution_id] = {
                     ...(existing || {}),
                     id: item.execution_id,
@@ -33,12 +40,16 @@ export const useExecutionRuns = create<RunState>((set) => ({
                     sessionId: item.session_id,
                     stage: (item.stage as RunStage) || 'executing',
                     sequence: item.sequence || 1,
-                    updatedAt: new Date().toISOString(),
+                    updatedAt: item.updated_at || new Date().toISOString(),
                     executorUnitId: item.source_unit_id,
                     message: item.last_event?.message || existing?.message,
-                    observationKind: 'run',
+                    observationKind: item.stage === 'idle' ? 'agent_snapshot' : 'run',
+                    cancellationScope: item.cancellation_scope || undefined,
+                    operationId: item.last_event?.operation_id || existing?.operationId,
+                    accountRef: item.last_event?.account_ref || existing?.accountRef,
                 };
             }
+            for (const [id, run] of Object.entries(next)) if (!seen.has(id) && !terminal(run.stage)) next[id] = { ...run, stage: 'unknown', message: 'Execução ausente do snapshot atual; resultado não confirmado.' };
             return { runs: next };
         }
         const data = frame.type === 'execution:cancel_result' ? frame : frame.event?.data;
@@ -54,7 +65,7 @@ export const useExecutionRuns = create<RunState>((set) => ({
         if (!previous && !lifecycle) return { runs }; // legacy text is never interpreted as an agent/run
         if (lifecycle && previous && (!Number.isFinite(data.sequence) || data.sequence <= previous.sequence)) return { runs };
         const stage: RunStage = lifecycle ? data.stage : previous!.stage;
-        if (!['executing', 'cancel_requested', 'cancelled', 'complete', 'error'].includes(stage)) return { runs };
+        if (!['executing', 'waiting_approval', 'paused', 'attention', 'unknown', 'cancel_requested', 'cancelled', 'complete', 'error'].includes(stage)) return { runs };
         const run: ExecutionRun = { ...previous, id: data.execution_id, agentId: data.agent_id, sessionId: data.session_id,
             stage, sequence: lifecycle ? data.sequence : previous!.sequence, updatedAt: frame.event?.timestamp || new Date().toISOString() };
         for (const [wire, key] of [['account_alias','accountAlias'],['routing_reason','routingReason'],['provider','provider'],['model','model'],['message','message'],['executor_unit_id','executorUnitId'],['device_id','deviceId'],['skills','skills'],['hooks','hooks'],['parent_execution_id','parentId'],['cancellation_scope','cancellationScope']] as const) {
@@ -63,6 +74,8 @@ export const useExecutionRuns = create<RunState>((set) => ({
         for (const [wire,key] of [['tokens_used','tokensUsed'],['token_limit','tokenLimit'],['quota_5h_remaining_percent','quota5h'],['quota_week_remaining_percent','quotaWeek']] as const) {
             if (typeof data[wire] === 'number' && Number.isFinite(data[wire]) && data[wire] >= 0) run[key] = data[wire];
         }
+        if (typeof data.operation_id === 'string') run.operationId = data.operation_id;
+        if (typeof data.account_ref === 'string') run.accountRef = data.account_ref;
         // Keep a bounded history; never discard active executions to make room.
         const entries = Object.values({ ...runs, [run.id]: run });
         const old = entries.filter(r => terminal(r.stage)).sort((a,b) => a.updatedAt.localeCompare(b.updatedAt));

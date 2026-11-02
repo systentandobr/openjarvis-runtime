@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { AgentOffice, runLabels } from '../components/Office/AgentOffice';
 import { useExecutionRuns, type ExecutionRun } from '../lib/execution-runs.store';
-import { openFredsSupervision } from '../lib/api';
+import { supervision, type SupervisionStatus } from '../lib/supervision';
 
-const statusText: Record<string, string> = {
+const statusText: Record<SupervisionStatus, string> = {
   connecting: 'Conectando ao Freds...',
   connected: 'Conectado (Tempo Real)',
   disconnected: 'Desconectado',
@@ -11,12 +11,11 @@ const statusText: Record<string, string> = {
 };
 
 export function OfficePage() {
-  const [status, setStatus] = useState('connecting');
+  const [status, setStatus] = useState<SupervisionStatus>(supervision.getStatus());
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [view, setView] = useState<'office' | 'list'>('office');
   const [target, setTarget] = useState<ExecutionRun | null>(null);
-  const [retry, setRetry] = useState(0);
   const cancelDialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -24,7 +23,6 @@ export function OfficePage() {
     else cancelDialog.current?.close();
   }, [target]);
 
-  const bridge = useRef<ReturnType<typeof openFredsSupervision> | null>(null);
   const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
   const live = useExecutionRuns((s) => s.runs);
   const [session, setSession] = useState('');
@@ -38,36 +36,24 @@ export function OfficePage() {
   );
   const active = visible.find((r) => r.id === selected);
 
+  // Conexão compartilhada: adquire ao montar, libera ao desmontar.
+  // O runs store é reconciliado pelo snapshot — nenhum reset local duplicado.
   useEffect(() => {
-    setSelected(null);
-    setSession('');
-    setDevice('');
-    setError('');
-    setTarget(null);
-    useExecutionRuns.getState().reset();
-
-    try {
-      bridge.current = openFredsSupervision(
-        (frame) => useExecutionRuns.getState().ingest(frame),
-        setStatus
-      );
-    } catch {
-      setStatus('disconnected');
-    }
-
+    const release = supervision.acquire();
+    const unsubscribe = supervision.subscribe(setStatus);
     return () => {
-      bridge.current?.close();
-      bridge.current = null;
+      unsubscribe();
+      release();
       timeouts.current.forEach(clearTimeout);
       timeouts.current = [];
     };
-  }, [retry]);
+  }, []);
 
   function cancel(run: ExecutionRun) {
     setTarget(null);
     const requestId = crypto.randomUUID();
     if (
-      !bridge.current?.cancel({
+      !supervision.cancel({
         execution_id: run.id,
         agent_id: run.agentId,
         session_id: run.sessionId,
@@ -112,7 +98,7 @@ export function OfficePage() {
             Monitoramento Operacional em Tempo Real
           </span>
           <span className="text-xs text-slate-400">
-            ({runs.length} especialistas conectados)
+            ({runs.length} execuções observadas)
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -122,11 +108,7 @@ export function OfficePage() {
           <button
             className={button}
             onClick={() => {
-              if (bridge.current?.requestSnapshot()) {
-                // snapshot solicitado via WebSocket ativo
-              } else {
-                setRetry((n) => n + 1);
-              }
+              if (!supervision.requestSnapshot()) supervision.reconnectNow();
             }}
           >
             Atualizar snapshot
@@ -191,7 +173,7 @@ export function OfficePage() {
               selectedId={selected}
               onSelect={setSelected}
               demo={false}
-              snapshots={true}
+              snapshots={visible.length > 0 && visible.every(run => run.observationKind === 'agent_snapshot')}
             />
           ) : (
             <div className="p-4 h-full overflow-auto space-y-2">
@@ -242,6 +224,8 @@ export function OfficePage() {
               <dl className="text-sm space-y-3 break-words">
                 {[
                   ['Identificador', active.id],
+                  ['Operação vinculada', active.operationId || 'Sem operação financeira vinculada'],
+                  ['Referência da conta', active.accountRef || 'Não informada'],
                   ['Sessão / Grupo', active.sessionId],
                   ['Canal / Unidade', active.executorUnitId || 'Não informado'],
                   ['Dispositivo', active.deviceId || 'Não informado'],
@@ -262,7 +246,7 @@ export function OfficePage() {
                 !['complete', 'error', 'cancelled'].includes(active.stage) && (
                   <button
                     className={`${button} mt-5 w-full text-rose-300 border-rose-800/50 hover:border-rose-400`}
-                    disabled={active.stage === 'cancel_requested'}
+                    disabled={active.stage === 'cancel_requested' || active.stage === 'unknown' || status !== 'connected'}
                     onClick={() => setTarget(active)}
                   >
                     Solicitar interrupção

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { AudioLines, Bot, Focus, GitBranch } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import type { DemoEvent, DemoService } from './fixtures';
 import { demoStars } from './fixtures';
 import { parallaxDelta } from './scene-utils';
@@ -9,14 +9,31 @@ import { NowFeed } from './NowFeed';
 import { SentinelSummary } from './SentinelSummary';
 import { ProvenanceLegend } from './ProvenanceLegend';
 import { AccessibleServiceList } from './AccessibleServiceList';
-import type { IntegrityFinding } from '../../types/ecosystem';
+import type { IntegrityFinding, ServiceState, SourceStatus } from '../../types/ecosystem';
+import type { SourceKey } from '../../lib/ecosystem-api';
+
+export interface SceneAgent {
+  id: string;
+  agentId: string;
+  label: string;
+  x: number;
+  y: number;
+  state: ServiceState;
+  stateLabel: string;
+  runId?: string;
+  count?: number;
+  mapped?: string | null;
+}
 
 interface Props {
   services: DemoService[];
+  agents: SceneAgent[];
   events: DemoEvent[];
   findings: IntegrityFinding[];
+  unmapped: SceneAgent[];
   animate: boolean;
   isDemo: boolean;
+  sourceStatus: Record<SourceKey, SourceStatus>;
   onInspect: (id: string) => void;
   onIntegrity: (id: string) => void;
   sceneRef: React.RefObject<HTMLDivElement | null>;
@@ -24,8 +41,9 @@ interface Props {
 }
 
 /** Renderer da cena — SVG com coordenadas determinísticas + overlays DOM acessíveis.
- *  Suporta dados reais (F360-05/06/07) e fixtures explícitas (F360-03/04). */
-export function EcosystemScene({ services, events, findings, animate, isDemo, onInspect, onIntegrity, sceneRef, onReset }: Props) {
+ *  Serviços na órbita externa, agentes (runs reais) na órbita interna.
+ *  Partículas só correm em links com atividade confirmada. */
+export function EcosystemScene({ services, agents, events, findings, unmapped, animate, isDemo, sourceStatus, onInspect, onIntegrity, sceneRef, onReset }: Props) {
   const frame = useRef<number | null>(null);
   const lastDelta = useRef<[number, number]>([0, 0]);
 
@@ -72,9 +90,9 @@ export function EcosystemScene({ services, events, findings, animate, isDemo, on
           {services.map((s, i) => {
             const d = `M500 335 Q${s.x * 10 + (i % 2 ? 50 : -50)} 335 ${s.x * 10} ${s.y * 6.6}`;
             return (
-              <g key={s.id} className={s.state === 'attention' ? 'f360-warning-link' : s.state === 'offline' ? 'f360-offline-link' : ''}>
+              <g key={s.id} className={s.state === 'attention' ? 'f360-warning-link' : s.state === 'unknown' ? 'f360-unknown-link' : s.state === 'offline' ? 'f360-offline-link' : ''}>
                 <path id={`f360-path-${s.id}`} d={d} markerEnd="url(#f360-arrow)" />
-                {s.state !== 'offline' && (
+                {s.state === 'available' && (
                   <circle className="f360-particle" r="2.5">
                     <animateMotion dur={`${4 + i * 0.7}s`} repeatCount="indefinite" path={d} />
                   </circle>
@@ -83,36 +101,34 @@ export function EcosystemScene({ services, events, findings, animate, isDemo, on
             );
           })}
           <ellipse cx="500" cy="335" rx="300" ry="220" className="f360-orbit" />
-          <ellipse cx="500" cy="335" rx="210" ry="180" className="f360-orbit" />
+          <ellipse cx="500" cy="335" rx="190" ry="150" className="f360-orbit" />
         </svg>
         <FredsCore isDemo={isDemo} />
         {services.map((s) => (
           <ServiceNode key={s.id} service={s} onInspect={onInspect} />
         ))}
-        <button className="f360-agent f360-agent-dev" onClick={() => onInspect('core')}>
-          <span>
-            <GitBranch size={16} />
-          </span>
-          <AudioLines size={20} />
-          <small>Developer</small>
-        </button>
-        <button className="f360-agent f360-agent-qa" onClick={() => onInspect('core')}>
-          <span>
-            <Focus size={16} />
-          </span>
-          <small>QA</small>
-        </button>
-        <button className="f360-agent f360-agent-arch" onClick={() => onInspect('core')}>
-          <span>
-            <Bot size={16} />
-          </span>
-          <small>Architect</small>
-        </button>
+        {agents.map((a) => (
+          <button
+            key={a.id}
+            className={`f360-agent f360-agent-${a.state}`}
+            style={{ left: `${a.x}%`, top: `${a.y}%` }}
+            onClick={() => onInspect(a.id)}
+            aria-label={`Agente ${a.agentId}, ${a.stateLabel}. Abrir detalhes.`}
+          >
+            <span>
+              <Bot size={16} />
+            </span>
+            <small>
+              {a.label}
+              {a.count && a.count > 1 ? ` ×${a.count}` : ''}
+            </small>
+          </button>
+        ))}
       </div>
-      <NowFeed events={events} onInspect={onInspect} isDemo={isDemo} />
-      <SentinelSummary onInspect={onInspect} onIntegrity={onIntegrity} findings={findings} isDemo={isDemo} />
-      <ProvenanceLegend isDemo={isDemo} />
-      <AccessibleServiceList services={services} onInspect={onInspect} />
+      <NowFeed events={events} unmapped={unmapped} onInspect={onInspect} isDemo={isDemo} activityStatus={sourceStatus.activity} />
+      <SentinelSummary onInspect={onInspect} onIntegrity={onIntegrity} findings={findings} isDemo={isDemo} integrityStatus={sourceStatus.integrity} />
+      <ProvenanceLegend isDemo={isDemo} sourceStatus={sourceStatus} />
+      <AccessibleServiceList services={services} onInspect={onInspect} isDemo={isDemo} />
     </div>
   );
 }

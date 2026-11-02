@@ -12,6 +12,9 @@ export interface SourceStamp {
   generatedAt: string | null;
   version: string | null;
   coverage: string[];
+  /** Motivo sanitizado quando não está 'ready'
+   *  (ex.: 'unauthorized' | 'unconfigured' | 'unreachable' | 'no_report' | 'error'). */
+  reason?: string;
 }
 
 export type ServiceState = 'available' | 'attention' | 'offline' | 'unknown';
@@ -54,14 +57,37 @@ export interface IntegrityFinding {
   evidenceRef: string | null;
 }
 
+/** Sessão do catálogo devmode-sessions — catálogo, não atividade. */
+export interface CatalogSession {
+  id: string;
+  projectId: string | null;
+  workspaceId: string | null;
+  title: string | null;
+  status: string;
+  updatedAt: string | null;
+}
+
+/** Registry de correlação emitido pelo backend (F360-02).
+ *  agentId ausente do mapa permanece em 'Não mapeadas'. */
+export interface EcosystemRegistry {
+  agentServices: Record<string, string>;
+}
+
 export interface EcosystemSnapshot {
   schemaVersion: 1;
   snapshotId: string;
   serverTime: string;
-  sources: { graph: SourceStamp; activity: SourceStamp; integrity: SourceStamp };
+  sources: {
+    graph: SourceStamp;
+    activity: SourceStamp;
+    integrity: SourceStamp;
+    sessions?: SourceStamp;
+  };
   nodes: ServiceNode[];
   relations: Relation[];
   executions: ExecutionOverlay[];
   findings: IntegrityFinding[];
+  sessions?: CatalogSession[];
+  registry?: EcosystemRegistry;
   warnings: string[];
 }

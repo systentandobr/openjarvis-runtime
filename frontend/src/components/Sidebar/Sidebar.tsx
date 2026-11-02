@@ -18,7 +18,8 @@ import {
   ScrollText,
   Database,
 } from 'lucide-react';
-import { ConversationList } from './ConversationList';
+import { ProjectSessionList } from './ProjectSessionList';
+import { ModuleCardsGrid } from './ModuleCardsGrid';
 import { useAppStore } from '../../lib/store';
 
 export function Sidebar() {
@@ -58,6 +59,7 @@ export function Sidebar() {
     { path: '/data-sources', icon: Database, label: 'Data Sources' },
     { path: '/agents', icon: Bot, label: 'Agents' },
     { path: '/office', icon: Bot, label: 'Escritório do Freds' },
+    { path: '/freddy', icon: Bot, label: 'Freddy Assistant · prévia' },
     { path: '/logs', icon: ScrollText, label: 'Logs' },
     { path: '/settings', icon: Settings, label: 'Settings' },
     { path: '/get-started', icon: Rocket, label: 'Get Started' },
@@ -187,9 +189,12 @@ export function Sidebar() {
             </div>
           </div>
 
-          {/* Conversation list */}
-          <div className="flex-1 overflow-y-auto px-2">
-            <ConversationList searchQuery={searchQuery} />
+          {/* Native Modules Cards Grid */}
+          <ModuleCardsGrid />
+
+          {/* Project & Sessions Grouped List */}
+          <div className="flex-1 overflow-y-auto px-2 min-h-0 border-t border-[var(--color-border)] pt-2">
+            <ProjectSessionList searchQuery={searchQuery} />
           </div>
 
           {/* Bottom nav */}

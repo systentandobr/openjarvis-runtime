@@ -32,7 +32,7 @@ export const demoStars = Array.from({ length: 55 }, (_, i) => ({
   r: i % 9 === 0 ? 3 : 1.2,
 }));
 
-export interface DemoEvent { time: string; agent: string; event: string; kind: 'dev' | 'qa' | 'arch'; }
+export interface DemoEvent { time: string; agent: string; event: string; kind: 'dev' | 'qa' | 'arch'; runId?: string; }
 
 export const demoEvents: DemoEvent[] = [
   { time: '10:42', agent: 'Developer', event: 'revisando integração', kind: 'dev' },

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type {
   Conversation,
+  Project,
   ChatMessage,
   LiveEnergyMetrics,
   LogEntry,
@@ -42,9 +43,22 @@ const OPTIN_EMAIL_KEY = 'openjarvis-email';
 const OPTIN_ANONID_KEY = 'openjarvis-anon-id';
 const OPTIN_SEEN_KEY = 'openjarvis-optin-seen';
 
+export const DEFAULT_PROJECT_ID = 'proj_default';
+export const DEFAULT_PROJECT: Project = {
+  id: DEFAULT_PROJECT_ID,
+  name: 'Geral',
+  description: 'Sessões e interações gerais',
+  color: '#3b82f6',
+  createdAt: 1700000000000,
+  updatedAt: 1700000000000,
+  isCollapsed: false,
+};
+
 interface ConversationStore {
   version: 1;
   conversations: Record<string, Conversation>;
+  projects?: Record<string, Project>;
+  activeProjectId?: string | null;
   activeId: string | null;
 }
 
@@ -55,11 +69,30 @@ function generateId(): string {
 function loadConversations(): ConversationStore {
   try {
     const raw = localStorage.getItem(CONVERSATIONS_KEY);
-    if (!raw) return { version: 1, conversations: {}, activeId: null };
+    if (!raw) {
+      return {
+        version: 1,
+        conversations: {},
+        projects: { [DEFAULT_PROJECT_ID]: { ...DEFAULT_PROJECT } },
+        activeProjectId: DEFAULT_PROJECT_ID,
+        activeId: null,
+      };
+    }
     const parsed = JSON.parse(raw);
     if (parsed.version === 1) {
+      if (!parsed.projects || Object.keys(parsed.projects).length === 0) {
+        parsed.projects = { [DEFAULT_PROJECT_ID]: { ...DEFAULT_PROJECT } };
+      }
+      if (!parsed.activeProjectId) {
+        parsed.activeProjectId = DEFAULT_PROJECT_ID;
+      }
+
       let repaired = false;
       for (const conversation of Object.values(parsed.conversations ?? {}) as Conversation[]) {
+        if (!conversation.projectId || !parsed.projects[conversation.projectId]) {
+          conversation.projectId = DEFAULT_PROJECT_ID;
+          repaired = true;
+        }
         for (const message of conversation.messages ?? []) {
           for (const toolCall of message.toolCalls ?? []) {
             const argumentsText = serializeToolCallArguments(toolCall.arguments);
@@ -74,16 +107,26 @@ function loadConversations(): ConversationStore {
         try {
           localStorage.setItem(CONVERSATIONS_KEY, JSON.stringify(parsed));
         } catch {
-          // Keep the repaired conversations usable in memory when storage is
-          // read-only or full. A failed best-effort writeback must not make
-          // otherwise readable conversation history disappear from the UI.
+          // Keep usable in memory
         }
       }
       return parsed;
     }
-    return { version: 1, conversations: {}, activeId: null };
+    return {
+      version: 1,
+      conversations: {},
+      projects: { [DEFAULT_PROJECT_ID]: { ...DEFAULT_PROJECT } },
+      activeProjectId: DEFAULT_PROJECT_ID,
+      activeId: null,
+    };
   } catch {
-    return { version: 1, conversations: {}, activeId: null };
+    return {
+      version: 1,
+      conversations: {},
+      projects: { [DEFAULT_PROJECT_ID]: { ...DEFAULT_PROJECT } },
+      activeProjectId: DEFAULT_PROJECT_ID,
+      activeId: null,
+    };
   }
 }
 
@@ -149,6 +192,10 @@ const INITIAL_STREAM: StreamState = {
 };
 
 interface AppState {
+  // Projects & Grouping
+  projects: Project[];
+  activeProjectId: string | null;
+
   // Conversations
   conversations: Conversation[];
   activeId: string | null;
@@ -182,11 +229,20 @@ interface AppState {
   optInModalSeen: boolean;
   optInModalOpen: boolean;
 
+  // Actions: projects
+  createProject: (name: string, description?: string, color?: string) => string;
+  renameProject: (id: string, name: string) => void;
+  deleteProject: (id: string) => void;
+  toggleProjectCollapse: (id: string) => void;
+  setActiveProjectId: (id: string | null) => void;
+  setSessionProject: (conversationId: string, projectId: string) => void;
+
   // Actions: conversations
   loadConversations: () => void;
   importOverlayConversation: () => Promise<void>;
-  createConversation: (model?: string) => string;
+  createConversation: (model?: string, projectId?: string | null) => string;
   selectConversation: (id: string) => void;
+  renameConversation: (id: string, title: string) => void;
   deleteConversation: (id: string) => void;
   loadMessages: (conversationId: string | null) => void;
   addMessage: (conversationId: string, message: ChatMessage) => void;
@@ -270,8 +326,13 @@ export const useAppStore = create<AppState>((set, get) => {
   const convList = Object.values(initial.conversations).sort(
     (a, b) => b.updatedAt - a.updatedAt,
   );
+  const projectList = Object.values(initial.projects || {}).sort(
+    (a, b) => b.updatedAt - a.updatedAt,
+  );
 
   return {
+    projects: projectList,
+    activeProjectId: initial.activeProjectId || DEFAULT_PROJECT_ID,
     conversations: convList,
     activeId: initial.activeId,
     messages:
@@ -299,6 +360,92 @@ export const useAppStore = create<AppState>((set, get) => {
     optInModalSeen: localStorage.getItem(OPTIN_SEEN_KEY) === 'true',
     optInModalOpen: false,
 
+    // ── Projects ───────────────────────────────────────────────────
+
+    createProject: (name: string, description?: string, color?: string) => {
+      const store = loadConversations();
+      if (!store.projects) store.projects = {};
+      const newProject: Project = {
+        id: 'proj_' + generateId(),
+        name: name.trim() || 'Novo Projeto',
+        description: description?.trim() || '',
+        color: color || '#3b82f6',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        isCollapsed: false,
+      };
+      store.projects[newProject.id] = newProject;
+      store.activeProjectId = newProject.id;
+      saveConversations(store);
+      set({
+        projects: Object.values(store.projects).sort((a, b) => b.updatedAt - a.updatedAt),
+        activeProjectId: newProject.id,
+      });
+      return newProject.id;
+    },
+
+    renameProject: (id: string, name: string) => {
+      const store = loadConversations();
+      if (!store.projects || !store.projects[id]) return;
+      store.projects[id].name = name.trim() || store.projects[id].name;
+      store.projects[id].updatedAt = Date.now();
+      saveConversations(store);
+      set({
+        projects: Object.values(store.projects).sort((a, b) => b.updatedAt - a.updatedAt),
+      });
+    },
+
+    deleteProject: (id: string) => {
+      const store = loadConversations();
+      if (!store.projects || !store.projects[id]) return;
+      delete store.projects[id];
+      if (!store.projects[DEFAULT_PROJECT_ID]) {
+        store.projects[DEFAULT_PROJECT_ID] = { ...DEFAULT_PROJECT };
+      }
+      for (const conv of Object.values(store.conversations)) {
+        if (conv.projectId === id) {
+          conv.projectId = DEFAULT_PROJECT_ID;
+        }
+      }
+      if (store.activeProjectId === id) {
+        store.activeProjectId = DEFAULT_PROJECT_ID;
+      }
+      saveConversations(store);
+      set({
+        projects: Object.values(store.projects).sort((a, b) => b.updatedAt - a.updatedAt),
+        conversations: Object.values(store.conversations).sort((a, b) => b.updatedAt - a.updatedAt),
+        activeProjectId: store.activeProjectId,
+      });
+    },
+
+    toggleProjectCollapse: (id: string) => {
+      const store = loadConversations();
+      if (!store.projects || !store.projects[id]) return;
+      store.projects[id].isCollapsed = !store.projects[id].isCollapsed;
+      saveConversations(store);
+      set({
+        projects: Object.values(store.projects).sort((a, b) => b.updatedAt - a.updatedAt),
+      });
+    },
+
+    setActiveProjectId: (id: string | null) => {
+      const store = loadConversations();
+      store.activeProjectId = id;
+      saveConversations(store);
+      set({ activeProjectId: id });
+    },
+
+    setSessionProject: (conversationId: string, projectId: string) => {
+      const store = loadConversations();
+      if (!store.conversations[conversationId]) return;
+      store.conversations[conversationId].projectId = projectId;
+      store.conversations[conversationId].updatedAt = Date.now();
+      saveConversations(store);
+      set({
+        conversations: Object.values(store.conversations).sort((a, b) => b.updatedAt - a.updatedAt),
+      });
+    },
+
     // ── Conversations ───────────────────────────────────────────────
 
     loadConversations: () => {
@@ -307,6 +454,8 @@ export const useAppStore = create<AppState>((set, get) => {
         conversations: Object.values(store.conversations).sort(
           (a, b) => b.updatedAt - a.updatedAt,
         ),
+        projects: Object.values(store.projects || {}).sort((a, b) => b.updatedAt - a.updatedAt),
+        activeProjectId: store.activeProjectId || DEFAULT_PROJECT_ID,
         activeId: store.activeId,
       });
     },
@@ -335,6 +484,7 @@ export const useAppStore = create<AppState>((set, get) => {
           updatedAt: overlay.updatedAt || Date.now(),
           model: overlay.model || 'default',
           messages: overlay.messages,
+          projectId: store.activeProjectId || DEFAULT_PROJECT_ID,
         };
         saveConversations(store);
         set({
@@ -347,8 +497,9 @@ export const useAppStore = create<AppState>((set, get) => {
       }
     },
 
-    createConversation: (model?: string) => {
+    createConversation: (model?: string, projectId?: string | null) => {
       const store = loadConversations();
+      const targetProjectId = projectId || store.activeProjectId || DEFAULT_PROJECT_ID;
       const conv: Conversation = {
         id: generateId(),
         title: 'New chat',
@@ -356,15 +507,18 @@ export const useAppStore = create<AppState>((set, get) => {
         updatedAt: Date.now(),
         model: model || get().selectedModel || 'default',
         messages: [],
+        projectId: targetProjectId,
       };
       store.conversations[conv.id] = conv;
       store.activeId = conv.id;
+      store.activeProjectId = targetProjectId;
       saveConversations(store);
       set({
         conversations: Object.values(store.conversations).sort(
           (a, b) => b.updatedAt - a.updatedAt,
         ),
         activeId: conv.id,
+        activeProjectId: targetProjectId,
         messages: [],
       });
       return conv.id;
@@ -373,11 +527,28 @@ export const useAppStore = create<AppState>((set, get) => {
     selectConversation: (id: string) => {
       const store = loadConversations();
       store.activeId = id;
-      saveConversations(store);
       const conv = store.conversations[id];
+      if (conv?.projectId) {
+        store.activeProjectId = conv.projectId;
+      }
+      saveConversations(store);
       set({
         activeId: id,
+        activeProjectId: conv?.projectId || store.activeProjectId || DEFAULT_PROJECT_ID,
         messages: conv ? conv.messages : [],
+      });
+    },
+
+    renameConversation: (id: string, title: string) => {
+      const store = loadConversations();
+      if (!store.conversations[id]) return;
+      store.conversations[id].title = title.trim() || store.conversations[id].title;
+      store.conversations[id].updatedAt = Date.now();
+      saveConversations(store);
+      set({
+        conversations: Object.values(store.conversations).sort(
+          (a, b) => b.updatedAt - a.updatedAt,
+        ),
       });
     },
 

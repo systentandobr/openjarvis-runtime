@@ -7,6 +7,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { GetStartedPage } from './pages/GetStartedPage';
 import { AgentsPage } from './pages/AgentsPage';
 import { OfficePage } from './pages/OfficePage';
+import { FreddyPage } from './pages/FreddyPage';
+import { Freds360Page } from './components/Freds360/Freds360Page';
 import { DataSourcesPage } from './pages/DataSourcesPage';
 import { LogsPage } from './pages/LogsPage';
 import { CommandPalette } from './components/CommandPalette';
@@ -192,6 +194,8 @@ export default function App() {
           <Route path="data-sources" element={<DataSourcesPage />} />
           <Route path="agents" element={<AgentsPage />} />
           <Route path="office" element={<OfficePage />} />
+          <Route path="freddy" element={<FreddyPage />} />
+          <Route path="freddy/360" element={<Freds360Page />} />
           <Route path="logs" element={<LogsPage />} />
         </Route>
       </Routes>

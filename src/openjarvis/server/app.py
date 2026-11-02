@@ -479,7 +479,10 @@ def create_app(
                     pass
 
     from openjarvis.server.freds_bridge import router as freds_supervision_router
+    from openjarvis.server.ecosystem_router import router as ecosystem_router
+
     app.include_router(freds_supervision_router)
+    app.include_router(ecosystem_router)
     app.include_router(router)
     app.include_router(dashboard_router)
     app.include_router(comparison_router)

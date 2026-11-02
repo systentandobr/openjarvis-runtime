@@ -129,6 +129,16 @@ export interface ChatMessage {
   audio?: { url: string };
 }
 
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  color?: string;
+  createdAt: number;
+  updatedAt: number;
+  isCollapsed?: boolean;
+}
+
 export interface Conversation {
   id: string;
   title: string;
@@ -136,11 +146,14 @@ export interface Conversation {
   updatedAt: number;
   model: string;
   messages: ChatMessage[];
+  projectId?: string;
 }
 
 export interface ConversationStore {
   version: 1;
   conversations: Record<string, Conversation>;
+  projects?: Record<string, Project>;
+  activeProjectId?: string | null;
   activeId: string | null;
 }
 

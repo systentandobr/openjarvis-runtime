@@ -53,3 +53,23 @@ class TestResolveMcpServers:
     def test_non_object_entries_are_rejected(self, raw: str, tmp_path: Path) -> None:
         with pytest.raises(ValueError, match="entry 0"):
             resolve_mcp_servers(raw, tmp_path)
+
+
+def test_token_env_is_resolved_without_mutating_source(tmp_path, monkeypatch):
+    monkeypatch.setenv('FREDS_MCP_TOKEN', 'private-test-token')
+    raw = '[{"name":"freds","url":"https://example.com/mcp","token_env":"FREDS_MCP_TOKEN"}]'
+    result = resolve_mcp_servers(raw, tmp_path)
+    assert result[0]['token'] == 'private-test-token'
+    assert 'token_env' not in result[0]
+    assert 'private-test-token' not in raw
+
+
+def test_missing_token_env_fails_closed(tmp_path, monkeypatch):
+    monkeypatch.delenv('FREDS_MCP_TOKEN', raising=False)
+    with pytest.raises(ValueError, match='requires environment variable'):
+        resolve_mcp_servers('[{"token_env":"FREDS_MCP_TOKEN"}]', tmp_path)
+
+
+def test_token_env_cannot_fall_back_to_inline_token(tmp_path):
+    with pytest.raises(ValueError, match='cannot combine'):
+        resolve_mcp_servers('[{"token_env":"MISSING","token":"secret"}]', tmp_path)

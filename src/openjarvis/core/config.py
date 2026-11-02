@@ -1093,6 +1093,21 @@ def resolve_mcp_servers(raw: str, config_dir: Path) -> list[dict[str, Any]]:
                 ) from exc
         if not isinstance(server, dict):
             raise ValueError(f"MCP server entry {index} must be a JSON object")
+        # Resolve credentials only in the server process. Explicit references
+        # fail closed; never fall back to an inline token on a missing secret.
+        server = dict(server)
+        if "token_env" in server:
+            import re
+
+            env_name = server.pop("token_env")
+            if not isinstance(env_name, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", env_name):
+                raise ValueError(f"MCP server entry {index} has invalid token_env")
+            if server.get("token"):
+                raise ValueError(f"MCP server entry {index} cannot combine token and token_env")
+            secret = os.environ.get(env_name, "").strip()
+            if not secret:
+                raise ValueError(f"MCP server entry {index} requires environment variable {env_name}")
+            server["token"] = secret
         servers.append(server)
     return servers
 

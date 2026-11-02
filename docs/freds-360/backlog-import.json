@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-27",
+  "status": "registered",
+  "blocker": null,
+  "mockup": "https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal",
+  "related_epic_id": "6ae09463806c0105785f7440",
+  "instructions": "After fixing service, query existing titles/IDs before each mutation; submit args using upsert_backlog_item sequentially, inspect textual errors even when isError=false, then read back and record returned IDs. Only initialize F360-00 frontend pipeline after confirmed registration; do not dispatch automatically. Do not restart FR-00.",
+  "tasks": [
+    {
+      "code": "F360-00",
+      "registration_status": "confirmed",
+      "remote_id": "6ae1067df52993ee9524dab3",
+      "depends_on": [],
+      "pipeline": "frontend",
+      "args": {
+        "title": "[F360-00] Freds 360°: épico visual, Graphify, agentes e Sentinel",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: nenhuma.\n\nCoordenar a entrega em cortes A shell/demo, B estrutura+atividade read-only, C Sentinel/evidências, D chat/voz, E QA/ativação. Não reiniciar FR-00 nem seus pipelines. Ler docs/freds-360/DESIGN.md e IMPLEMENTATION.md antes de editar.\n\nRevisão de design → contratos → shell/renderer → três fontes reais → chat/voz existente → QA. Dependências são registradas como texto/tags, não enforcement automático.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRevisão operacional — 28/10/2026\nRevisão de 28/10/2026: implementação frontend não equivale a operação. Priorizar paridade observacional Office/360, agentes Agno/atendimento e catálogo devmode-sessions. Critérios completos em docs/freds-360/OPERATIONAL-GAP-2026-10-28.md. Não fechar épico por testes mockados ou avanço de pipeline; manter gates por fonte. Sem reiniciar/dispatch nesta revisão.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\nIntegrações e referências (sem alteração presumida):\n- /Users/marcelio/developing/systentando/backend-monorepo — módulo python/freds; Agno, Graphify, auditoria e backlog\n- /Users/marcelio/developing/systentando/microservices-workspace/freds-gateway — módulo local Go de supervisão; raiz Git independente não identificada nesta revisão\n- /Users/marcelio/developing/systentando/microservices-workspace/devmode-sessions — catálogo REST de sessões; execução continua no Friendly\n- /Users/marcelio/developing/systentando/code-assistant-friendly — executor local e publisher de telemetria\n- /Users/marcelio/developing/systentando/architecture-guides — guardrails e serviço Sentinel\n- /Users/marcelio/developing/systentando/site — referência de identidade visual; sem alteração prevista\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/docs/freds-360/OPERATIONAL-GAP-2026-10-28.md\n- /Users/marcelio/developing/systentando/openjarvis-runtime/docs/freds-360/IMPLEMENTATION.md\nLimite de responsabilidade: Coordenação e evidências; mudanças de código pertencem às subtarefas. Não migrar domínios nesta tarefa.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "architect",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 13,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-00"
+        ]
+      }
+    },
+    {
+      "code": "F360-01",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10681f52993ee9524dab4",
+      "depends_on": [],
+      "pipeline": "frontend",
+      "args": {
+        "title": "[F360-01] Design system, layout responsivo e motion do Freds 360°",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: nenhuma.\n\nDesign inicial já produzido em docs/freds-360/DESIGN.md, aguardando revisão. Mockup aprovado com carvão #0a0a0c e lime #d5ff40, núcleo abstrato Freds, grafo dominante e poucos painéis. Adaptar tokens do site sem importar CSS global. Especificar desktop/mobile, estados vazios/parciais/desconectados e drawer.\n\nAceite: validar composição 1440x900/1024x768/390x844, contraste AA, toque>=44px, texto legível, reduced-motion e lista acessível equivalente. Aprovar critérios antes do renderer; mockup não prova serviços online.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\nIntegrações e referências (sem alteração presumida):\n- /Users/marcelio/developing/systentando/site — referência de identidade visual; sem alteração prevista\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/docs/freds-360/DESIGN.md\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/freds360.css\nLimite de responsabilidade: Design, tokens e responsividade no OpenJarvis. Site é somente referência, sem importar CSS global.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "ux",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 5,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-01"
+        ]
+      }
+    },
+    {
+      "code": "F360-02",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10682f52993ee9524dab5",
+      "depends_on": [
+        "F360-01"
+      ],
+      "pipeline": "default",
+      "args": {
+        "title": "[F360-02] Contratos da projeção 360° e registry de correlação",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: F360-01.\n\nDefinir portas GraphSource/ExecutionSource/IntegritySource, IDs estáveis por serviço/repo/agent/run, modelo snapshot schemaVersion/sourceStamp com timestamps e coverage separados, cursor/sequence por origem, sanitização. Decidir reuse do WS versus envelope novo em ADR. Ler proposta detalhada IMPLEMENTATION.md.\n\nAceite: contratos versionados, fixtures validadas, política sem mapping→Não mapeadas, auth por contexto, nenhuma união por nome aproximado, nenhuma regeneração de grafo/audit em GET. Persistência nova só por interface memory+Mongo se necessária.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRevisão operacional — 28/10/2026\nAmpliar registry canônico para serviço/agente/engine/sessão/dispositivo; correlação explícita agentId→serviceId e executionId/sessionId/deviceId→task Hadness, sem aproximação por nome. Contrato atual ServiceNode aceita só service/repository; definir evolução versionada. Catálogo não é atividade. Fontes independentes com cobertura e timestamps. Detalhes e evidências: docs/freds-360/OPERATIONAL-GAP-2026-10-28.md.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\nIntegrações e referências (sem alteração presumida):\n- /Users/marcelio/developing/systentando/backend-monorepo — módulo python/freds; Agno, Graphify, auditoria e backlog\n- /Users/marcelio/developing/systentando/microservices-workspace/freds-gateway — módulo local Go de supervisão; raiz Git independente não identificada nesta revisão\n- /Users/marcelio/developing/systentando/microservices-workspace/devmode-sessions — catálogo REST de sessões; execução continua no Friendly\n- /Users/marcelio/developing/systentando/code-assistant-friendly — executor local e publisher de telemetria\n- /Users/marcelio/developing/systentando/architecture-guides — guardrails e serviço Sentinel\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/types/ecosystem.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/docs/freds-360/IMPLEMENTATION.md\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/core/execution_supervision.py\n- /Users/marcelio/developing/systentando/microservices-workspace/freds-gateway/SPEC.md\n- /Users/marcelio/developing/systentando/microservices-workspace/devmode-sessions/SPEC.md\nLimite de responsabilidade: Contratos/registry e ADR no OpenJarvis; revisar envelopes dos produtores. Alteração de protocolo compartilhado exige versionamento e trabalho coordenado em F360-06.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "architect",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 5,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-02",
+          "depends:F360-01"
+        ]
+      }
+    },
+    {
+      "code": "F360-03",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10683f52993ee9524dab6",
+      "depends_on": [
+        "F360-01",
+        "F360-02"
+      ],
+      "pipeline": "frontend",
+      "args": {
+        "title": "[F360-03] Shell visual e navegação /freddy/360 com fontes simuladas explícitas",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: F360-01, F360-02.\n\nCriar shell, núcleo, feed, painel Sentinel, inspector e dock conforme DESIGN. Reconciliar App/Sidebar e ModuleCardsGrid/ProjectSessionList com edições concorrentes; não sobrescrever. Rota preview ou flag mantém /freddy e /office. Fixtures em modo demo explícito, sem mocks quando modo real falhar.\n\nAceite: seleção/drawer/teclado/foco/Escape/mobile funcionais, origem e status claros, botões não simulam operação sem aviso; nenhum fetch fora api.ts, sem novas credenciais ou chamadas pagas.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\nIntegrações e referências (sem alteração presumida):\n- Nenhuma integração externa necessária para esta tarefa.\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/App.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/Freds360Page.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Sidebar/Sidebar.tsx\nLimite de responsabilidade: Shell/navegação exclusivamente no frontend OpenJarvis; preservar Office e edições concorrentes.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "frontend-dev",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 8,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-03",
+          "depends:F360-01",
+          "depends:F360-02"
+        ]
+      }
+    },
+    {
+      "code": "F360-04",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10684f52993ee9524dab7",
+      "depends_on": [
+        "F360-02",
+        "F360-03"
+      ],
+      "pipeline": "frontend",
+      "args": {
+        "title": "[F360-04] Renderer de grafo e animação parallax acessível",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: F360-02, F360-03.\n\nSVG com coordenadas determinísticas e overlays DOM; motion já instalado. Estrutura agregada overview até 80 nós/160 arestas como orçamento inicial, expandir sob demanda. Núcleo voz independente do estado operacional; parallax decorativo<=8px, controles fixos; sem force-layout contínuo.\n\nAceite: layout estável, fit/seleção/pausa/reduced-motion; sem timer por aresta; limitar partículas e trabalho por frame; aba oculta pausa efeitos; lista alternativa completa. Medir antes de introduzir WebGL/Canvas.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\nIntegrações e referências (sem alteração presumida):\n- Nenhuma integração externa necessária para esta tarefa.\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/EcosystemScene.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/ServiceNode.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/AccessibleServiceList.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/scene-utils.ts\nLimite de responsabilidade: Renderer, órbitas dinâmicas, agrupamento e layout acessível no frontend; não implementar transporte nesta tarefa.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "frontend-dev",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 8,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-04",
+          "depends:F360-02",
+          "depends:F360-03"
+        ]
+      }
+    },
+    {
+      "code": "F360-05",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10685f52993ee9524dab8",
+      "depends_on": [
+        "F360-02"
+      ],
+      "pipeline": "backend",
+      "args": {
+        "title": "[F360-05] Graphify snapshot seguro, versionamento e atualização da estrutura",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: F360-02.\n\nReutilizar backend-monorepo/python/freds/services/ecosystem_graph_service.py e routers/ecosystem.py. Investigar lru_cache e invalidar por versão/mtime/publicação atômica. Adapter OpenJarvis lê projeção browser-safe; não enviar merged-graph bruto/caminhos privados. proposed GET /v1/ecosystem/snapshot deve ser confirmado antes de criar.\n\nAceite: generatedAt/observedAt/version/coverage, grafo ausente/stale explícito, ETag/refresh leve sugerido60s configurável, nenhum Graphify pesado por GET; auth/unidade e limits. graphify-out fora do Git; testar snapshot substituído atomicamente.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRevisão operacional — 28/10/2026\nGap confirmado: frontend chama /v1/ecosystem/snapshot mas rota backend não localizada. Implementar FastAPI→application→GraphSource (não HTTP direto na UI), validação real de schema e limites, scoping autenticado, cache/versionamento. Snapshot vazio válido não injeta fixtures; estrutura Graphify indisponível não bloqueia eventos. Ver OPERATIONAL-GAP-2026-10-28.md.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\n- /Users/marcelio/developing/systentando/backend-monorepo — módulo python/freds; Agno, Graphify, auditoria e backlog\nIntegrações e referências (sem alteração presumida):\n- /Users/marcelio/developing/systentando/architecture-guides — guardrails e serviço Sentinel\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/lib/ecosystem-api.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/src/openjarvis/server/app.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/services/ecosystem_graph_service.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/routers/ecosystem.py\nLimite de responsabilidade: Implementar adapter/projeção backend no OpenJarvis; ajustar origem Graphify no Freds apenas quando necessário para versão/cache/sanitização. Novos arquivos application/ports/adapters devem seguir IMPLEMENTATION.md; são propostos, não existentes.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "backend-dev",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 8,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-05",
+          "depends:F360-02"
+        ]
+      }
+    },
+    {
+      "code": "F360-06",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10686f52993ee9524dab9",
+      "depends_on": [
+        "F360-02",
+        "F360-04"
+      ],
+      "pipeline": "backend",
+      "args": {
+        "title": "[F360-06] Sobrepor execuções reais e reconciliar reconexões",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: F360-02, F360-04.\n\nReutilizar server/freds_bridge.py, lib/api.ts e execution-runs.store.ts; não criar fonte paralela de verdade. Mapear run→serviço via registry explícito, runs desconhecidos na lista não mapeada. Feed filtra/agrega heartbeats sem perder lifecycle terminal. Timeouts e reconciliação mantêm unknown/cancel_unconfirmed.\n\nAceite: duplicado/fora de ordem/terminal/snapshot atrasado/duas sessões/troca de unidade testados; backoff+jitter; reconnect não reexecuta comando; lacuna de replay declarada; animações só de atividade confirmada; auth server-side sem URL privada no browser.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRevisão operacional — 28/10/2026\nPrioridade operacional: OfficePage é dono atual de openFredsSupervision; useEcosystemView só lê store. Extrair conexão/lifetime compartilhado, reconexão e snapshots, abrir diretamente no 360 sem resets/duplicação de consumidores. Atividade independe do snapshot Graphify/viewMode real. Projetar eventos em agentes orbitais dinâmicos, drawer e feed (incluindo terminais), preservar sequence/unknown/cancel_unconfirmed. Instrumentar lifecycle do Agno em core/agent_chatbot.py (início/etapa sanitizada/conclusão/falha/heartbeat), publisher autenticado para supervisão existente; auditoria de qualidade não substitui execução. Não presumir bus compartilhado Python↔Go: verificar autoridade efetiva. Reusar FO-03 DONE e coordenar migração gateway 6adc0e15c69499d7282a4838 REVIEW, sem recriá-la. Aceite: abrir 360 limpo, mesmo run Office, atendimento Agno real controlado, reconnect/tenant negativo. Ver OPERATIONAL-GAP-2026-10-28.md.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\n- /Users/marcelio/developing/systentando/backend-monorepo — módulo python/freds; Agno, Graphify, auditoria e backlog\nIntegrações e referências (sem alteração presumida):\n- /Users/marcelio/developing/systentando/microservices-workspace/freds-gateway — módulo local Go de supervisão; raiz Git independente não identificada nesta revisão\n- /Users/marcelio/developing/systentando/code-assistant-friendly — executor local e publisher de telemetria\n- /Users/marcelio/developing/systentando/microservices-workspace/devmode-sessions — catálogo REST de sessões; execução continua no Friendly\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/pages/OfficePage.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/useEcosystemView.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/lib/api.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/lib/execution-runs.store.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/src/openjarvis/server/freds_bridge.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/core/agent_chatbot.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/websocket/handlers.py\n- /Users/marcelio/developing/systentando/microservices-workspace/freds-gateway/internal/supervision/handler.go\n- /Users/marcelio/developing/systentando/code-assistant-friendly/internal/application/execution/telemetry.go\nLimite de responsabilidade: OpenJarvis: conexão compartilhada e projeção de runs. Freds Python: lifecycle Agno e publicação autenticada. Gateway/Friendly são contratos de integração; alterar só se teste de protocolo demonstrar necessidade, coordenando tarefa de migração existente, sem recriar hub.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "backend-dev",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 8,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-06",
+          "depends:F360-02",
+          "depends:F360-04"
+        ]
+      }
+    },
+    {
+      "code": "F360-07",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10686f52993ee9524daba",
+      "depends_on": [
+        "F360-02",
+        "F360-03"
+      ],
+      "pipeline": "backend",
+      "args": {
+        "title": "[F360-07] Sentinel privado: findings, cobertura e evidências no painel",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: F360-02, F360-03.\n\nIntegrar consultas sentinel_health/latest_report/list_findings/prioritized_issues em architecture-guides/sentinel/mcp/server.py pela bridge privada autorizada. Não confundir recipe local sentinel de social monitoring. Projeção sanitizada mapeia auditId/findingId/check/severity/estado/serviço/cobertura/data; polling30–60s configurável.\n\nAceite: segredo nunca em evidência/log/bundle; sem relatório=Não verificado; fonte stale destacada; nenhum run_audit/sync_backlog por GET; finding não implica enforcement. Testar auth/timeout/fonte parcial/sem mapping/cross-unit; caminho de evidência autorizado.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRevisão operacional — 28/10/2026\nGap: fetchSentinelFindings não compõe loadEcosystemView; erro retorna [] e painel vazio pode anunciar sem alertas. Separar indisponível/unauthorized/stale/ready + coverage/auditId/data. Nunca concluir conformidade pelo vazio ou indisponibilidade. Integrar adapter backend privado; distinguir Sentinel arquitetural, guardrails por operação e qualidade atendimento. Revisar escopo dos endpoints /api/atendimento/audits (unit_id opcional, jev-stats sem filtro explícito nos handlers) antes de expor agregados. Ver OPERATIONAL-GAP-2026-10-28.md.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\n- /Users/marcelio/developing/systentando/backend-monorepo — módulo python/freds; Agno, Graphify, auditoria e backlog\nIntegrações e referências (sem alteração presumida):\n- /Users/marcelio/developing/systentando/architecture-guides — guardrails e serviço Sentinel\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/lib/ecosystem-api.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/SentinelSummary.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/InspectorDrawer.tsx\n- /Users/marcelio/developing/systentando/architecture-guides/sentinel/mcp/server.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/routers/atendimento_audit.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/core/atendimento_audit.py\nLimite de responsabilidade: OpenJarvis: adapter privado e status/cobertura. Freds: validar/corrigir autorização e projeção de auditoria de atendimento antes da exposição. Sentinel é fonte existente; mudança no produtor somente com lacuna comprovada, sem auditoria/remediação por GET.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "backend-dev",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 8,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-07",
+          "depends:F360-02",
+          "depends:F360-03"
+        ]
+      }
+    },
+    {
+      "code": "F360-08",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10687f52993ee9524dabb",
+      "depends_on": [
+        "F360-04",
+        "F360-05",
+        "F360-06",
+        "F360-07"
+      ],
+      "pipeline": "default",
+      "args": {
+        "title": "[F360-08] Integração read-only da cena, feed, drawer e fontes",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: F360-04, F360-05, F360-06, F360-07.\n\nCompor application/ecosystem_view via bootstrap; stores/seletores granulares, estado por contexto. api.ts única fronteira. Detalhes sob demanda, history cursor quando upstream suportar; sem alegar replay não implementado. Cabeçalho/legend distingue graph snapshot, activity e auditoria.\n\nAceite: uma fonte falha sem derrubar demais, limpeza ao trocar sessão, cap de eventos, sem dados globais privados em cache. Demonstrar seleção serviço→run/finding→evidência e acessibilidade sem animação. Budget overview250KB e render16/33ms como metas a medir.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRevisão operacional — 28/10/2026\nCompor fontes independentemente: live WS, catálogo devmode-sessions, grafo estrutural, Sentinel e qualidade de atendimento. Adapter server-side REST /api/v1/devmode/projects e /sessions paginado com identidade do contexto; correlacionar IDs sem paths/transcripts. Serviço catálogo já consta DONE 6adb77121f2f210d7147763a; não recriar. Nós orbitais devem vir do registry/observação (hoje Developer/QA/Architect fixos); layout estável evita x50/y50 para todos. Não marcar todo nó available por existir no grafo. Exibir Não mapeadas e fontes indisponíveis; atividade sem Graphify funciona. Drawer mostra runs reais e tarefa Hadness; relações só com proveniência. Coordena F360-02/04/06 e FR-07. Ver OPERATIONAL-GAP-2026-10-28.md.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\nIntegrações e referências (sem alteração presumida):\n- /Users/marcelio/developing/systentando/backend-monorepo — módulo python/freds; Agno, Graphify, auditoria e backlog\n- /Users/marcelio/developing/systentando/microservices-workspace/devmode-sessions — catálogo REST de sessões; execução continua no Friendly\n- /Users/marcelio/developing/systentando/microservices-workspace/freds-gateway — módulo local Go de supervisão; raiz Git independente não identificada nesta revisão\n- /Users/marcelio/developing/systentando/code-assistant-friendly — executor local e publisher de telemetria\n- /Users/marcelio/developing/systentando/architecture-guides — guardrails e serviço Sentinel\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/lib/ecosystem.store.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/Freds360Page.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/useEcosystemView.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/InspectorDrawer.tsx\n- /Users/marcelio/developing/systentando/microservices-workspace/devmode-sessions/internal/adapter/http/handler.go\n- /Users/marcelio/developing/systentando/microservices-workspace/devmode-sessions/SPEC.md\nLimite de responsabilidade: Composição e adapters de leitura no OpenJarvis. Catálogo devmode-sessions existente é consumido via API autenticada; não escrever diretamente em suas coleções nem recriar serviço. Correções dos produtores ficam nas tarefas responsáveis.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "developer",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 8,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-08",
+          "depends:F360-04",
+          "depends:F360-05",
+          "depends:F360-06",
+          "depends:F360-07"
+        ]
+      }
+    },
+    {
+      "code": "F360-09",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10688f52993ee9524dabc",
+      "depends_on": [
+        "F360-08"
+      ],
+      "pipeline": "default",
+      "args": {
+        "title": "[F360-09] Dock conversacional, voz e ações com contexto de seleção",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: F360-08.\n\nIntegrar FR-03 e FR-06 existentes, FC-01/FC-02, sem duplicar engine/persona. Clique/seleção entrega refs autorizadas como contexto, não instruções vindas de logs. Fonte real da resposta e estados ouvir/transcrever/pensar/falar; parar player distinto de cancelar run. Pode ser entregue após read-only se OpenAI/voz indisponíveis.\n\nAceite: sem token no frontend, sem autoescuta; aprovação ação/escopo verificável, ACK confirmação e deny testados; stale chunk descartado, texto fallback. Renderizar capacidade ausente em vez de fingir operação. Não publicar/remediar/negociar por evento.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRevisão operacional — 28/10/2026\nGap: ConversationDock.send só altera texto local inclusive isDemo=false e diz Objetivo enviado sem transporte. Integrar chat real com estados envio/ACK/resposta/erro e contexto sanitizado selecionado; até lá, indicar não conectado e não afirmar envio. Voz depende FR-06; orquestração FO-06/07 e FR-03. Leitura de supervisão não autoriza dispatch/cancel. Monitoramento pode ser aceito antes de voz/chat, com rótulos por capacidade. Ver OPERATIONAL-GAP-2026-10-28.md.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\nIntegrações e referências (sem alteração presumida):\n- /Users/marcelio/developing/systentando/backend-monorepo — módulo python/freds; Agno, Graphify, auditoria e backlog\n- /Users/marcelio/developing/systentando/code-assistant-friendly — executor local e publisher de telemetria\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/ConversationDock.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/lib/api.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/docs/freddy-setup.md\n- /Users/marcelio/developing/systentando/openjarvis-runtime/docs/freds-conversation.md\n- /Users/marcelio/developing/systentando/code-assistant-friendly/internal/application/execution/approval.go\nLimite de responsabilidade: Integrar chat/voz e contexto no OpenJarvis reutilizando FR-03/06 e FO-06/07; produtores são referência de protocolo. Não criar credenciais, capturar áudio ou despachar ações implicitamente.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "developer",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 8,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-09",
+          "depends:F360-08"
+        ]
+      }
+    },
+    {
+      "code": "F360-10",
+      "registration_status": "confirmed",
+      "remote_id": "6ae10689f52993ee9524dabd",
+      "depends_on": [
+        "F360-08",
+        "F360-09"
+      ],
+      "pipeline": "default",
+      "args": {
+        "title": "[F360-10] QA integrado, evidências e ativação reversível do 360°",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: F360-08, F360-09.\n\nReutilizar FR-12. Testes contrato/reducer/reconexão/isolamento/redaction/prompt injection de evidências/mobile/keyboard/reduced-motion. Verificar não-regressão /office e trabalho concorrente. Profiling real da cena, histórico limitado e fonte parcial. Runbook start/stop/diagnóstico/fonte/rollback.\n\nAceite: build+testes e revisão visual com mockup, resultados documentados, indicadores não confundem unknown com conforme/idle, flag rollback sem cancelar runs. Primeiro corte read-only pode revisar sem voz; encerrar entrega total só com escopo validado. Nenhum deploy nesta tarefa de planejamento.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRevisão operacional — 28/10/2026\nGate operacional adicional: E2E abrir /freddy/360 direto sem visitar Office, run idêntico em ambas, lifecycle real de atendimento Agno, sessões catálogo paginadas e correlacionadas, falha independente Graphify/Sentinel/gateway, vazio real sem fixtures, reconnect/duplicação/terminal imutável, tenant negativo e dados minimizados. 20 testes atuais passaram em 28/10 mas são fixtures/mocks; não provam ponta a ponta. Retirar demo apenas do escopo homologado; preservar indisponível/cobertura por fonte. Checklist completo OPERATIONAL-GAP-2026-10-28.md.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/openjarvis-runtime.\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\nIntegrações e referências (sem alteração presumida):\n- /Users/marcelio/developing/systentando/backend-monorepo — módulo python/freds; Agno, Graphify, auditoria e backlog\n- /Users/marcelio/developing/systentando/microservices-workspace/freds-gateway — módulo local Go de supervisão; raiz Git independente não identificada nesta revisão\n- /Users/marcelio/developing/systentando/microservices-workspace/devmode-sessions — catálogo REST de sessões; execução continua no Friendly\n- /Users/marcelio/developing/systentando/code-assistant-friendly — executor local e publisher de telemetria\n- /Users/marcelio/developing/systentando/architecture-guides — guardrails e serviço Sentinel\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/components/Freds360/Freds360.test.tsx\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/lib/ecosystem-api.test.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/frontend/src/lib/ecosystem.store.test.ts\n- /Users/marcelio/developing/systentando/openjarvis-runtime/tests/server/test_freds_bridge.py\n- /Users/marcelio/developing/systentando/openjarvis-runtime/docs/freds-360/OPERATIONAL-GAP-2026-10-28.md\nLimite de responsabilidade: E2E e runbook no OpenJarvis, exercitando integrações com fixtures controladas e ambientes autorizados. Testes unitários dos produtores pertencem às entregas correspondentes. Não executar testes mutáveis contra produção.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "tester",
+        "workspace_path": "/Users/marcelio/developing/systentando/openjarvis-runtime",
+        "priority": 2,
+        "story_points": 8,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-10",
+          "depends:F360-08",
+          "depends:F360-09"
+        ]
+      }
+    },
+    {
+      "code": "F360-11",
+      "registration_status": "confirmed",
+      "remote_id": "6ae1068af52993ee9524dabe",
+      "depends_on": [],
+      "pipeline": "backend",
+      "args": {
+        "title": "[F360-11] Restaurar cadastro MCP do backlog antes da importação",
+        "description": "Épico F360-00, relacionado a FR-00 (6ae09463806c0105785f7440). Dependências: nenhuma.\n\nCorrigir regressão do caminho de gravação que usa método inexistente BacklogServiceClient.post. Consultas get_backlog respondem; todas as tentativas de upsert F360 retornaram erro textual, apesar de isError=false. Investigar core/tools/backlog_tool.py e services/clients/backlog_service_client.py/BaseApiClient e aplicar no serviço correto em sessão autorizada.\n\nAceite: contrato de create/update real com idempotência e auth/unidade preservadas; erro expresso como falha de tool; consulta por título/chave confirma cadastro único. Não fazer fallback direto para Mongo nem mudar unidade para contornar.\n\nReferências obrigatórias: docs/freds-360/DESIGN.md, IMPLEMENTATION.md, TASKS.md. Mockup aprovado: https://chatgpt.com/library?file_id=libfile_91b0d252ae6c81919de961189ec93b71&account_id=personal. Arquivo local e SHA256 registrados em DESIGN.md. Fontes de runtime ainda não validadas; estados do mockup são fictícios. Não reiniciar pipelines FR-* existentes. Postiz permanece local. Execução em outra sessão, sem dispatch nesta entrega; deploy/publicação/remediação não autorizados pelo planejamento. Dependências em texto/tags não são bloqueio automático. Ler git status/diff antes de editar para preservar trabalho concorrente. Credenciais e unidade vêm do contexto autenticado, nunca do modelo.\n\nRepositórios e arquivos — revisão 28/10/2026\nWorkspace principal: /Users/marcelio/developing/systentando/backend-monorepo (módulo python/freds).\nRepositórios/módulos com alteração prevista:\n- /Users/marcelio/developing/systentando/backend-monorepo — módulo python/freds; Agno, Graphify, auditoria e backlog\n- /Users/marcelio/developing/systentando/openjarvis-runtime — interface, composição e bridge OpenJarvis\nIntegrações e referências (sem alteração presumida):\n- Nenhuma integração externa necessária para esta tarefa.\nArquivos de referência (caminhos absolutos):\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/services/clients/base_client.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/services/clients/backlog_service_client.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/core/tools/remote_backlog_tool.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/core/tools/backlog_factory.py\n- /Users/marcelio/developing/systentando/backend-monorepo/python/freds/tests/test_backlog_api_client.py\n- /Users/marcelio/developing/systentando/openjarvis-runtime/docs/freds-360/backlog-import.json\nLimite de responsabilidade: Correção/regressão no backend-monorepo/python/freds; OpenJarvis apenas manifesto/evidências de cadastro. Falha histórica de post já tem correção relatada e updates MCP bem-sucedidos; validar regressão/aceite, não reaplicar correção cegamente.\nLer AGENTS.md de cada repositório/módulo antes de editar. Preservar mudanças concorrentes. Dependências de tarefas permanecem conforme descrição; não reiniciar pipelines nem alterar fases nesta revisão.",
+        "phase": "TODO",
+        "assigned_agent_id": "backend-dev",
+        "workspace_path": "/Users/marcelio/developing/systentando/backend-monorepo/python/freds",
+        "priority": 2,
+        "story_points": 5,
+        "tags": [
+          "freds-360",
+          "hadness",
+          "handoff",
+          "f360-11"
+        ]
+      }
+    }
+  ],
+  "registration_verified_at": "2026-10-27",
+  "repository_mapping_verified_at": "2026-10-28"
+}

@@ -18,6 +18,28 @@ const event = (stage: string, sequence: number, extra = {}) => ({
 
 beforeEach(() => useExecutionRuns.getState().reset());
 
+it('representa espera, desconexão e recuperação sem confirmar conclusão financeira', () => {
+  const store = useExecutionRuns.getState();
+  store.ingest(event('waiting_approval', 1, { operation_id: 'op-1', account_ref: 'acct-1' }));
+  expect(useExecutionRuns.getState().runs.run.stage).toBe('waiting_approval');
+  expect(useExecutionRuns.getState().runs.run.operationId).toBe('op-1');
+  store.disconnected();
+  expect(useExecutionRuns.getState().runs.run.stage).toBe('unknown');
+  store.ingest({ type: 'execution:snapshot', runs: [{ execution_id: 'run', agent_id: 'dev', session_id: 's', sequence: 1, stage: 'waiting_approval' }] });
+  expect(useExecutionRuns.getState().runs.run.stage).toBe('waiting_approval');
+  store.ingest(event('complete', 2));
+  store.disconnected();
+  expect(useExecutionRuns.getState().runs.run.stage).toBe('complete');
+});
+
+it('snapshot antigo não sobrescreve etapa mais recente e ausência marca desconhecido', () => {
+  const store = useExecutionRuns.getState(); store.ingest(event('paused', 3));
+  store.ingest({ type: 'execution:snapshot', runs: [{ execution_id: 'run', agent_id: 'dev', session_id: 's', sequence: 2, stage: 'executing' }] });
+  expect(useExecutionRuns.getState().runs.run.stage).toBe('paused');
+  store.ingest({ type: 'execution:snapshot', runs: [] });
+  expect(useExecutionRuns.getState().runs.run.stage).toBe('unknown');
+});
+
 describe('correlação e confirmação de execução', () => {
   it('não transforma evento legado ou texto em execução identificada', () => {
     useExecutionRuns.getState().ingest({ type: 'execution:event', event: { data: { stage: 'executing' } } });

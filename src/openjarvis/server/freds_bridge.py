@@ -50,7 +50,11 @@ def upstream_url() -> str | None:
     # This connection is an observer, never an executor/orchestration target.
     query.pop("orchestration_enabled", None)
     query["token"] = token
-    query["is_admin"] = "true"
+    if parts.path.rstrip("/") == "/ws/supervision":
+        query["mode"] = "observer"
+        query.pop("is_admin", None)
+    else:
+        query["is_admin"] = "true"
     return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), ""))
 
 

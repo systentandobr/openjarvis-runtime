@@ -18,3 +18,12 @@ def test_upstream_requires_server_credentials_and_secure_transport(monkeypatch):
     assert upstream_url() is None
     monkeypatch.setenv("FREDS_SUPERVISION_WS_URL","ws://localhost/ws/unit?orchestration_enabled=true")
     assert "orchestration_enabled" not in upstream_url()
+
+
+def test_go_supervision_is_always_an_observer(monkeypatch):
+    monkeypatch.setenv("FREDS_SUPERVISION_DEVICE_TOKEN", "synthetic-token")
+    monkeypatch.setenv("FREDS_SUPERVISION_WS_URL", "ws://localhost:8603/ws/supervision?mode=executor&is_admin=true")
+    value = upstream_url()
+    assert "mode=observer" in value
+    assert "is_admin" not in value
+    assert "mode=executor" not in value

@@ -2,19 +2,39 @@ import { useEffect, useRef } from 'react';
 import { loadEcosystemView } from '../../lib/ecosystem-api';
 import { useEcosystemStore } from '../../lib/ecosystem.store';
 import { useExecutionRuns } from '../../lib/execution-runs.store';
+import { supervision, type SupervisionStatus } from '../../lib/supervision';
+import type { SourceStatus } from '../../types/ecosystem';
+
+/** Status da conexão WS → stamp da fonte 'activity'.
+ *  Conexão aberta não prova serviço saudável: 'disconnected' depois de ter
+ *  estado conectado é 'stale' (dados possivelmente desatualizados); antes
+ *  da primeira conexão é 'unavailable'. */
+function activityStatus(status: SupervisionStatus): SourceStatus {
+  switch (status) {
+    case 'connected':
+      return 'ready';
+    case 'connecting':
+      return 'loading';
+    case 'unconfigured':
+      return 'unavailable';
+    case 'disconnected':
+      return supervision.wasConnected() ? 'stale' : 'unavailable';
+  }
+}
 
 /** Coordena lifetime, cleanup e assinaturas do ecossistema 360°.
- *  Carrega snapshot na montagem; reage a visibilidade de aba.
- *  Integra execution-runs.store.ts como fonte de atividade.
+ *  - Adquire a conexão de supervisão compartilhada (mesma do Office).
+ *  - Carrega snapshot na montagem; fontes falham independentemente.
+ *  - Reage a visibilidade de aba e reduced-motion.
  *  IMPORTANTE: seletores de actions (referências estáveis) — nunca
- *  assinar o estado inteiro como dep de effect que chama set()
- *  (objeto novo a cada update → loop de update depth). */
+ *  assinar o estado inteiro como dep de effect que chama set(). */
 export function useEcosystemView() {
   const setLoading = useEcosystemStore((s) => s.setLoading);
   const applyView = useEcosystemStore((s) => s.applyView);
   const setSourceStatus = useEcosystemStore((s) => s.setSourceStatus);
   const setReducedMotion = useEcosystemStore((s) => s.setReducedMotion);
   const setHiddenTab = useEcosystemStore((s) => s.setHiddenTab);
+  const resetEcosystem = useEcosystemStore((s) => s.resetEcosystem);
   const runs = useExecutionRuns((s) => s.runs);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -35,17 +55,23 @@ export function useEcosystemView() {
     refresh();
     return () => {
       abortRef.current?.abort();
+      resetEcosystem();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Quando execuções reais chegam, marca fonte de atividade como ready
-  const runCount = Object.keys(runs).length;
+  // Conexão de supervisão compartilhada: /freddy/360 abre a mesma WS do
+  // Office. acquire/release por referência — nunca duplica nem reseta runs.
   useEffect(() => {
-    if (runCount > 0) {
-      setSourceStatus('activity', 'ready');
-    }
-  }, [runCount, setSourceStatus]);
+    const release = supervision.acquire();
+    const unsubscribe = supervision.subscribe((status) => {
+      setSourceStatus('activity', activityStatus(status));
+    });
+    return () => {
+      unsubscribe();
+      release();
+    };
+  }, [setSourceStatus]);
 
   // Pausa/reduced-motion via eventos do browser
   useEffect(() => {
@@ -62,5 +88,5 @@ export function useEcosystemView() {
     };
   }, [setReducedMotion, setHiddenTab]);
 
-  return { refresh, runCount };
+  return { refresh, runCount: Object.keys(runs).length };
 }

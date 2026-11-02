@@ -1,8 +1,8 @@
 import React from 'react';
 import type { ExecutionRun } from '../../lib/execution-runs.store';
 
-export const runLabels: Record<string,string> = { executing:'Executando', cancel_requested:'Interrupção solicitada', cancel_unconfirmed:'Sem confirmação de parada', cancelled:'Cancelado', complete:'Concluído', waiting_approval:'Aprovação pendente', error:'Falha', idle:'Aguardando', attention:'Precisa de atenção', paused:'Pausado' };
-const colors: Record<string,string> = { waiting_approval:'#f5bc67', executing:'#c3ff00', cancel_requested:'#f5bc67', cancel_unconfirmed:'#f5bc67', cancelled:'#9aa6ba', complete:'#60c5ab', error:'#ff8795' };
+export const runLabels: Record<string,string> = { unknown:'Estado não confirmado', executing:'Executando', cancel_requested:'Interrupção solicitada', cancel_unconfirmed:'Sem confirmação de parada', cancelled:'Cancelado', complete:'Concluído', waiting_approval:'Aprovação pendente', error:'Falha', idle:'Aguardando', attention:'Precisa de atenção', paused:'Pausado' };
+const colors: Record<string,string> = { unknown:'#f5bc67', paused:'#9aa6ba', attention:'#f5bc67', waiting_approval:'#f5bc67', executing:'#c3ff00', cancel_requested:'#f5bc67', cancel_unconfirmed:'#f5bc67', cancelled:'#9aa6ba', complete:'#60c5ab', error:'#ff8795' };
 
 /** Inspectable vector office, no animation loops or generated binary assets. */
 export function AgentOffice({ runs, selectedId, onSelect, demo = false, snapshots = false }: {

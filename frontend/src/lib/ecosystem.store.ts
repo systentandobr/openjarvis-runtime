@@ -2,10 +2,14 @@
  * Store de estado do ecossistema 360° (F360-08).
  * Separa grafo, overlays, fontes, seleção e preferências.
  * Reutiliza execution-runs.store.ts para execuções reais.
+ *
+ * 'demo' é modo EXPLÍCITO do usuário — nunca fallback silencioso.
+ * 'activity' é escrita exclusivamente pela conexão WS compartilhada
+ * (supervision.ts); applyView não a sobrescreve.
  */
 
 import { create } from 'zustand';
-import type { EcosystemSnapshot, ServiceNode, IntegrityFinding, ExecutionOverlay } from '../types/ecosystem';
+import type { EcosystemSnapshot, ServiceNode, IntegrityFinding, ExecutionOverlay, CatalogSession, SourceStatus } from '../types/ecosystem';
 import type { SourceKey, EcosystemView } from './ecosystem-api';
 
 export type ViewMode = 'demo' | 'real' | 'mixed';
@@ -16,11 +20,12 @@ interface EcosystemState {
   loading: boolean;
   error: string | null;
 
-  // Fontes individuais
-  sourceStatus: Record<SourceKey, 'loading' | 'ready' | 'stale' | 'unavailable' | 'unauthorized'>;
+  // Fontes individuais — status tipado por fonte, nunca status de serviço
+  sourceStatus: Record<SourceKey, SourceStatus>;
 
-  // Modo de visualização
+  // Modo de visualização — 'demo' somente quando demoExplicit
   viewMode: ViewMode;
+  demoExplicit: boolean;
 
   // Seleção
   selectedNodeId: string | null;
@@ -35,8 +40,9 @@ interface EcosystemState {
   setSnapshot: (snapshot: EcosystemSnapshot | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
-  setSourceStatus: (key: SourceKey, status: EcosystemState['sourceStatus'][SourceKey]) => void;
+  setSourceStatus: (key: SourceKey, status: SourceStatus) => void;
   setViewMode: (mode: ViewMode) => void;
+  setDemoExplicit: (enabled: boolean) => void;
   selectNode: (id: string | null) => void;
   setSelectedTab: (tab: EcosystemState['selectedTab']) => void;
   setAnimate: (animate: boolean) => void;
@@ -45,12 +51,15 @@ interface EcosystemState {
   toggleAnimate: () => void;
   resetSelection: () => void;
   applyView: (view: EcosystemView) => void;
+  /** Limpeza ao trocar contexto/sessão — não persiste dados de outro escopo. */
+  resetEcosystem: () => void;
 }
 
 const initialSourceStatus: EcosystemState['sourceStatus'] = {
   graph: 'unavailable',
   activity: 'unavailable',
   integrity: 'unavailable',
+  sessions: 'unavailable',
 };
 
 export const useEcosystemStore = create<EcosystemState>((set) => ({
@@ -58,7 +67,8 @@ export const useEcosystemStore = create<EcosystemState>((set) => ({
   loading: false,
   error: null,
   sourceStatus: { ...initialSourceStatus },
-  viewMode: 'demo',
+  viewMode: 'real',
+  demoExplicit: false,
   selectedNodeId: null,
   selectedTab: 'Contexto',
   animate: true,
@@ -71,6 +81,8 @@ export const useEcosystemStore = create<EcosystemState>((set) => ({
   setSourceStatus: (key, status) =>
     set(({ sourceStatus }) => ({ sourceStatus: { ...sourceStatus, [key]: status } })),
   setViewMode: (viewMode) => set({ viewMode }),
+  setDemoExplicit: (demoExplicit) =>
+    set({ demoExplicit, viewMode: demoExplicit ? 'demo' : 'real' }),
   selectNode: (selectedNodeId) => set({ selectedNodeId }),
   setSelectedTab: (selectedTab) => set({ selectedTab }),
   setAnimate: (animate) => set({ animate }),
@@ -79,16 +91,29 @@ export const useEcosystemStore = create<EcosystemState>((set) => ({
   toggleAnimate: () => set(({ animate }) => ({ animate: !animate })),
   resetSelection: () => set({ selectedNodeId: null, selectedTab: 'Contexto' }),
   applyView: (view) =>
-    set({
+    set((state) => ({
       snapshot: view.snapshot,
-      viewMode: view.demo ? 'demo' : view.snapshot ? 'real' : 'mixed',
+      // demo só quando o usuário escolheu explicitamente; real otherwise
+      viewMode: state.demoExplicit ? 'demo' : 'real',
       sourceStatus: {
+        // 'activity' pertence à conexão WS compartilhada — não sobrescrever
+        activity: state.sourceStatus.activity,
         graph: view.stamps.graph.status,
-        activity: view.stamps.activity.status,
         integrity: view.stamps.integrity.status,
+        sessions: view.stamps.sessions.status,
       },
       error: view.error,
-    }),
+    })),
+  resetEcosystem: () =>
+    set((state) => ({
+      snapshot: null,
+      loading: false,
+      error: null,
+      sourceStatus: { ...initialSourceStatus },
+      viewMode: state.demoExplicit ? 'demo' : 'real',
+      selectedNodeId: null,
+      selectedTab: 'Contexto',
+    })),
 }));
 
 /** Hook de conveniência: nós do snapshot ou vazio. */
@@ -104,4 +129,9 @@ export function useEcosystemExecutions(): ExecutionOverlay[] {
 /** Hook de conveniência: findings do snapshot. */
 export function useEcosystemFindings(): IntegrityFinding[] {
   return useEcosystemStore((s) => s.snapshot?.findings ?? []);
+}
+
+/** Hook de conveniência: catálogo de sessões devmode. */
+export function useEcosystemSessions(): CatalogSession[] {
+  return useEcosystemStore((s) => s.snapshot?.sessions ?? []);
 }

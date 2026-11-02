@@ -26,16 +26,23 @@ describe('ecosystem-api', () => {
         schemaVersion: 1,
         snapshotId: 'test',
         serverTime: new Date().toISOString(),
-        sources: { graph: { status: 'ready', observedAt: null, generatedAt: null, version: '1', coverage: [] }, activity: { status: 'ready', observedAt: null, generatedAt: null, version: '1', coverage: [] }, integrity: { status: 'ready', observedAt: null, generatedAt: null, version: '1', coverage: [] } },
+        sources: {
+          graph: { status: 'ready', observedAt: null, generatedAt: null, version: '1', coverage: [] },
+          activity: { status: 'ready', observedAt: null, generatedAt: null, version: '1', coverage: [] },
+          integrity: { status: 'ready', observedAt: null, generatedAt: null, version: '1', coverage: [] },
+          sessions: { status: 'ready', observedAt: null, generatedAt: null, version: '1', coverage: ['proj'] },
+        },
         nodes: [],
         relations: [],
         executions: [],
         findings: [],
+        sessions: [],
         warnings: [],
       };
       vi.mocked(apiFetch).mockResolvedValue({ ok: true, json: async () => snapshot } as Response);
       const result = await fetchEcosystemSnapshot();
-      expect(result).toEqual(snapshot);
+      expect(result).toMatchObject(snapshot);
+      expect(result?.sources.sessions.status).toBe('ready');
     });
   });
 

@@ -1,0 +1,31 @@
+# Perfil explícito do ecossistema; credenciais vêm do ambiente do servidor.
+# Não substitui a configuração pessoal em ~/.openjarvis.
+[intelligence]
+default_model = "gpt-5.4-nano"
+preferred_engine = "cloud"
+provider = "openai"
+max_tokens = 1024
+
+[engine]
+default = "cloud"
+
+[speech]
+backend = "faster-whisper"
+model = "base"
+language = "pt"
+device = "cpu"
+compute_type = "int8"
+tts_backend = "kokoro"
+voice_id = "pm_alex"
+
+[skills]
+enabled = true
+skills_dir = "./skills"
+
+[system_prompt]
+prefix = "Você é Freds (Freddy Assistant), assistente pessoal do ecossistema Systentando. Consulte a skill freds-conversational. Diferencie dado confirmado de hipótese e execução de proposta. Nunca afirme conexão ou publicação sem confirmação."
+
+[tools.mcp]
+enabled = true
+# Lista vazia até confirmar endpoints e credenciais por serviço.
+servers = "[]"
