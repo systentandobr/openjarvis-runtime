@@ -33,13 +33,39 @@ NC='\033[0m' # No Color
 # Helper para checar se porta está em uso
 is_port_in_use() {
   local port="$1"
-  lsof -i ":$port" >/dev/null 2>&1
+  lsof -sTCP:LISTEN -i ":$port" >/dev/null 2>&1
 }
 
 # Helper para obter PID de uma porta
 get_pid_on_port() {
   local port="$1"
-  lsof -ti ":$port" | head -n 1 || true
+  lsof -sTCP:LISTEN -ti ":$port" | head -n 1 || true
+}
+
+# Helper para determinar a porta do frontend (5173 ou alternativa se 5173 estiver ocupada)
+resolve_frontend_port() {
+  if [ -n "${FRONTEND_PORT:-}" ]; then
+    echo "$FRONTEND_PORT"
+    return
+  fi
+  if [ -f "$PID_DIR/frontend.port" ]; then
+    local saved_port
+    saved_port=$(cat "$PID_DIR/frontend.port" 2>/dev/null || true)
+    if [ -n "$saved_port" ]; then
+      echo "$saved_port"
+      return
+    fi
+  fi
+  if is_port_in_use 5173; then
+    local current_pid
+    current_pid=$(get_pid_on_port 5173)
+    # Se a porta 5173 já está em uso por outro processo (não nosso frontend registrado)
+    if [ ! -f "$PID_DIR/frontend.pid" ] || [ "$current_pid" != "$(cat "$PID_DIR/frontend.pid" 2>/dev/null)" ]; then
+      echo "5174"
+      return
+    fi
+  fi
+  echo "5173"
 }
 
 # ------------------------------------------------------------------------------
@@ -71,19 +97,28 @@ start_backend() {
 }
 
 start_frontend() {
-  echo -e "${CYAN}▶ Iniciando OpenJarvis Frontend (Porta 5173)...${NC}"
-  if is_port_in_use 5173; then
-    echo -e "  ${YELLOW}⚠ Porta 5173 já está em uso (PID: $(get_pid_on_port 5173)). Mantendo ativo.${NC}"
+  local port
+  port=$(resolve_frontend_port)
+  echo -e "${CYAN}▶ Iniciando OpenJarvis Frontend (Porta $port)...${NC}"
+
+  if [ -f "$PID_DIR/frontend.pid" ] && kill -0 "$(cat "$PID_DIR/frontend.pid" 2>/dev/null)" 2>/dev/null; then
+    echo -e "  ${GREEN}✓ Frontend já está em execução (PID: $(cat "$PID_DIR/frontend.pid")). Mantendo ativo.${NC}"
+    return 0
+  fi
+
+  if is_port_in_use "$port"; then
+    echo -e "  ${YELLOW}⚠ Porta $port já está em uso (PID: $(get_pid_on_port "$port")). Mantendo ativo.${NC}"
   else
     cd "$FRONTEND_DIR"
-    nohup npm run dev > "$LOGS_DIR/frontend.log" 2>&1 &
+    nohup ./node_modules/.bin/vite --port "$port" > "$LOGS_DIR/frontend.log" 2>&1 &
     local pid=$!
     echo "$pid" > "$PID_DIR/frontend.pid"
+    echo "$port" > "$PID_DIR/frontend.port"
 
     echo -n "  Aguardando frontend responder"
     for i in {1..20}; do
-      if is_port_in_use 5173; then
-        echo -e " ${GREEN}✓ Conectado! (PID $pid)${NC}"
+      if is_port_in_use "$port"; then
+        echo -e " ${GREEN}✓ Conectado! (PID $pid na porta $port)${NC}"
         return 0
       fi
       echo -n "."
@@ -125,37 +160,46 @@ start_all() {
   start_frontend
   start_friendly
 
+  local f_port
+  f_port=$(resolve_frontend_port)
+
   echo ""
   echo -e "${GREEN}================================================================${NC}"
   echo -e "${GREEN}  ✓ Ecossistema pronto e operacional!${NC}"
   echo -e "${GREEN}================================================================${NC}"
-  echo -e "  🏢 ${CYAN}Escritório dos Agentes:${NC} http://localhost:5173/office"
-  echo -e "  💬 ${CYAN}Chat / Oráculo Visual:${NC}  http://localhost:5173/"
+  echo -e "  🏢 ${CYAN}Escritório dos Agentes:${NC} http://localhost:${f_port}/office"
+  echo -e "  💬 ${CYAN}Chat / Oráculo Visual:${NC}  http://localhost:${f_port}/"
   echo -e "  🔌 ${CYAN}API Server Backend:${NC}     http://127.0.0.1:8000"
   echo -e "  📄 ${CYAN}Logs em:${NC}                $LOGS_DIR/"
   echo ""
   echo -e "  💡 Para abrir diretamente no navegador, execute:"
-  echo -e "     ${YELLOW}open http://localhost:5173/office${NC}"
+  echo -e "     ${YELLOW}open http://localhost:${f_port}/office${NC}"
   echo -e "${GREEN}================================================================${NC}"
 }
 
 stop_all() {
   echo -e "${YELLOW}▶ Encerrando serviços do ecossistema...${NC}"
   
-  # Parar frontend na porta 5173
-  local f_pid
-  f_pid=$(get_pid_on_port 5173)
-  if [ -n "$f_pid" ]; then
-    echo -e "  Encerrando Frontend (PID $f_pid)..."
-    kill "$f_pid" 2>/dev/null || true
+  # Parar frontend se registrado em frontend.pid
+  if [ -f "$PID_DIR/frontend.pid" ]; then
+    local f_pid
+    f_pid=$(cat "$PID_DIR/frontend.pid" 2>/dev/null || true)
+    if [ -n "$f_pid" ] && kill -0 "$f_pid" 2>/dev/null; then
+      echo -e "  Encerrando Frontend (PID $f_pid)..."
+      kill "$f_pid" 2>/dev/null || true
+    fi
+    rm -f "$PID_DIR/frontend.pid" "$PID_DIR/frontend.port"
   fi
 
-  # Parar backend na porta 8000
-  local b_pid
-  b_pid=$(get_pid_on_port 8000)
-  if [ -n "$b_pid" ]; then
-    echo -e "  Encerrando Backend (PID $b_pid)..."
-    kill "$b_pid" 2>/dev/null || true
+  # Parar backend na porta 8000 / backend.pid
+  if [ -f "$PID_DIR/backend.pid" ]; then
+    local b_pid
+    b_pid=$(cat "$PID_DIR/backend.pid" 2>/dev/null || true)
+    if [ -n "$b_pid" ] && kill -0 "$b_pid" 2>/dev/null; then
+      echo -e "  Encerrando Backend (PID $b_pid)..."
+      kill "$b_pid" 2>/dev/null || true
+    fi
+    rm -f "$PID_DIR/backend.pid"
   fi
 
   # Parar Friendly bot se foi iniciado pelo script
@@ -169,7 +213,7 @@ stop_all() {
     rm -f "$PID_DIR/friendly.pid"
   fi
 
-  rm -f "$PID_DIR"/*.pid
+  rm -f "$PID_DIR"/*.pid "$PID_DIR"/*.port
   echo -e "${GREEN}✓ Serviços finalizados.${NC}"
 }
 
@@ -182,10 +226,12 @@ status_all() {
     echo -e "  Backend (8000):   ${RED}○ OFFLINE${NC}"
   fi
 
-  if is_port_in_use 5173; then
-    echo -e "  Frontend (5173):  ${GREEN}● ONLINE${NC} (PID: $(get_pid_on_port 5173))"
+  local f_port
+  f_port=$(resolve_frontend_port)
+  if is_port_in_use "$f_port"; then
+    echo -e "  Frontend ($f_port):  ${GREEN}● ONLINE${NC} (PID: $(get_pid_on_port "$f_port"))"
   else
-    echo -e "  Frontend (5173):  ${RED}○ OFFLINE${NC}"
+    echo -e "  Frontend ($f_port):  ${RED}○ OFFLINE${NC}"
   fi
 
   if pgrep -f "assistant-bot" >/dev/null 2>&1; then
@@ -253,7 +299,9 @@ case "$CMD" in
     tail_logs "${2:-all}"
     ;;
   open)
-    open http://localhost:5173/office
+    local f_port
+    f_port=$(resolve_frontend_port)
+    open "http://localhost:${f_port}/office"
     ;;
   oraculo|oracle|research)
     shift
